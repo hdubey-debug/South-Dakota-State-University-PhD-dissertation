@@ -1,0 +1,1174 @@
+%File: anonymous-submission-latex-2026.tex
+\documentclass[letterpaper]{article} % DO NOT CHANGE THIS
+\usepackage[submission]{aaai2026}  % DO NOT CHANGE THIS
+\usepackage{times}  % DO NOT CHANGE THIS
+\usepackage{helvet}  % DO NOT CHANGE THIS
+\usepackage{courier}  % DO NOT CHANGE THIS
+\usepackage[hyphens]{url}  % DO NOT CHANGE THIS
+\usepackage{graphicx} % DO NOT CHANGE THIS
+\usepackage{amsmath}  % For mathematical typesetting
+\usepackage{amssymb}  % For mathematical symbols like \mathbb
+\usepackage{multirow} % For multirow cells in tables
+\urlstyle{rm} % DO NOT CHANGE THIS
+\def\UrlFont{\rm}  % DO NOT CHANGE THIS
+\usepackage{natbib}  % DO NOT CHANGE THIS AND DO NOT ADD ANY OPTIONS TO IT
+\usepackage{caption} % DO NOT CHANGE THIS AND DO NOT ADD ANY OPTIONS TO IT
+\frenchspacing  % DO NOT CHANGE THIS
+\setlength{\pdfpagewidth}{8.5in} % DO NOT CHANGE THIS
+\setlength{\pdfpageheight}{11in} % DO NOT CHANGE THIS
+%
+% These are recommended to typeset algorithms but not required. See the subsubsection on algorithms. Remove them if you don't have algorithms in your paper.
+\usepackage{algorithm}
+\usepackage{algorithmic}
+
+%
+% These are are recommended to typeset listings but not required. See the subsubsection on listing. Remove this block if you don't have listings in your paper.
+\usepackage{newfloat}
+\usepackage{listings}
+\DeclareCaptionStyle{ruled}{labelfont=normalfont,labelsep=colon,strut=off} % DO NOT CHANGE THIS
+\lstset{%
+	basicstyle={\footnotesize\ttfamily},% footnotesize acceptable for monospace
+	numbers=left,numberstyle=\footnotesize,xleftmargin=2em,% show line numbers, remove this entire line if you don't want the numbers.
+	aboveskip=0pt,belowskip=0pt,%
+	showstringspaces=false,tabsize=2,breaklines=true}
+\floatstyle{ruled}
+\newfloat{listing}{tb}{lst}{}
+\floatname{listing}{Listing}
+%
+% Keep the \pdfinfo as shown here. There's no need
+% for you to add the /Title and /Author tags.
+\pdfinfo{
+/TemplateVersion (2026.1)
+}
+
+% DISALLOWED PACKAGES
+% \usepackage{authblk} -- This package is specifically forbidden
+% \usepackage{balance} -- This package is specifically forbidden
+% \usepackage{color (if used in text)
+% \usepackage{CJK} -- This package is specifically forbidden
+% \usepackage{float} -- This package is specifically forbidden
+% \usepackage{flushend} -- This package is specifically forbidden
+% \usepackage{fontenc} -- This package is specifically forbidden
+% \usepackage{fullpage} -- This package is specifically forbidden
+% \usepackage{geometry} -- This package is specifically forbidden
+% \usepackage{grffile} -- This package is specifically forbidden
+% \usepackage{hyperref} -- This package is specifically forbidden
+% \usepackage{navigator} -- This package is specifically forbidden
+% (or any other package that embeds links such as navigator or hyperref)
+% \indentfirst} -- This package is specifically forbidden
+% \layout} -- This package is specifically forbidden
+% \multicol} -- This package is specifically forbidden
+% \nameref} -- This package is specifically forbidden
+% \usepackage{savetrees} -- This package is specifically forbidden
+% \usepackage{setspace} -- This package is specifically forbidden
+% \usepackage{stfloats} -- This package is specifically forbidden
+% \usepackage{tabu} -- This package is specifically forbidden
+% \usepackage{titlesec} -- This package is specifically forbidden
+% \usepackage{tocbibind} -- This package is specifically forbidden
+% \usepackage{ulem} -- This package is specifically forbidden
+% \usepackage{wrapfig} -- This package is specifically forbidden
+% DISALLOWED COMMANDS
+% \nocopyright -- Your paper will not be published if you use this command
+% \addtolength -- This command may not be used
+% \balance -- This command may not be used
+% \baselinestretch -- Your paper will not be published if you use this command
+% \clearpage -- No page breaks of any kind may be used for the final version of your paper
+% \columnsep -- This command may not be used
+% \newpage -- No page breaks of any kind may be used for the final version of your paper
+% \pagebreak -- No page breaks of any kind may be used for the final version of your paperr
+% \pagestyle -- This command may not be used
+% \tiny -- This is not an acceptable font size.
+% \vspace{- -- No negative value may be used in proximity of a caption, figure, table, section, subsection, subsubsection, or reference
+% \vskip{- -- No negative value may be used to alter spacing above or below a caption, figure, table, section, subsection, subsubsection, or reference
+
+\setcounter{secnumdepth}{0} %May be changed to 1 or 2 if section numbers are desired.
+
+% The file aaai2026.sty is the style file for AAAI Press
+% proceedings, working notes, and technical reports.
+%
+
+% Title
+
+% Your title must be in mixed case, not sentence case.
+% That means all verbs (including short verbs like be, is, using,and go),
+% nouns, adverbs, adjectives should be capitalized, including both words in hyphenated terms, while
+% articles, conjunctions, and prepositions are lower case unless they
+% directly follow a colon or long dash
+\title{Video Comprehension Score (VCS): A Metric for Long-Form Video Description Evaluation}
+\author{
+    %Authors
+    % All authors must be in the same font size and format.
+    Written by AAAI Press Staff\textsuperscript{\rm 1}\thanks{With help from the AAAI Publications Committee.}\\
+    AAAI Style Contributions by Pater Patel Schneider,
+    Sunil Issar,\\
+    J. Scott Penberthy,
+    George Ferguson,
+    Hans Guesgen,
+    Francisco Cruz\equalcontrib,
+    Marc Pujol-Gonzalez\equalcontrib
+}
+\affiliations{
+    %Afiliations
+    \textsuperscript{\rm 1}Association for the Advancement of Artificial Intelligence\\
+    % If you have multiple authors and multiple affiliations
+    % use superscripts in text and roman font to identify them.
+    % For example,
+
+    % Sunil Issar\textsuperscript{\rm 2},
+    % J. Scott Penberthy\textsuperscript{\rm 3},
+    % George Ferguson\textsuperscript{\rm 4},
+    % Hans Guesgen\textsuperscript{\rm 5}
+    % Note that the comma should be placed after the superscript
+
+    1101 Pennsylvania Ave, NW Suite 300\\
+    Washington, DC 20004 USA\\
+    % email address must be in roman text type, not monospace or sans serif
+    proceedings-questions@aaai.org
+%
+% See more examples next
+}
+
+%Example, Single Author, ->> remove \iffalse,\fi and place them surrounding AAAI title to use it
+\iffalse
+\title{My Publication Title --- Single Author}
+\author {
+    Author Name
+}
+\affiliations{
+    Affiliation\\
+    Affiliation Line 2\\
+    name@example.com
+}
+\fi
+
+\iffalse
+%Example, Multiple Authors, ->> remove \iffalse,\fi and place them surrounding AAAI title to use it
+\title{My Publication Title --- Multiple Authors}
+\author {
+    % Authors
+    First Author Name\textsuperscript{\rm 1},
+    Second Author Name\textsuperscript{\rm 2},
+    Third Author Name\textsuperscript{\rm 1}
+}
+\affiliations {
+    % Affiliations
+    \textsuperscript{\rm 1}Affiliation 1\\
+    \textsuperscript{\rm 2}Affiliation 2\\
+    firstAuthor@affiliation1.com, secondAuthor@affilation2.com, thirdAuthor@affiliation1.com
+}
+\fi
+
+
+% REMOVE THIS: bibentry
+% This is only needed to show inline citations in the guidelines document. You should not need it and can safely delete it.
+\usepackage{bibentry}
+% END REMOVE bibentry
+
+\begin{document}
+
+\maketitle
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.8\textwidth]{VCS.pdf}
+\caption{VCS Pipeline. The VCS assesses video descriptions by comparing a reference text ($T_{ref}$) with a model-generated text ($T_{gen}$). Both texts are initially segmented by SaT and embedded via NV-Embed-v2. The Global Alignment Score (GAS) is computed from the full text embeddings. For localized analysis, texts are chunked and embedded, forming a similarity matrix. From this, precision and recall-oriented best matches yield the Local Alignment Score (LAS)—the harmonic mean of $LAS_P$ (precision) and $LAS_R$ (recall). The Narrative Alignment Score (NAS) incorporates distance-based ($NAS_D$) and line-based ($NAS_L$) assessments. $NAS_D$ and $NAS_L$ are harmonic means of their respective precision and recall components. A Window Regularizer ($R_W$) refines the NAS. The Semantic Alignment Score (SAS) is derived by modulating GAS with LAS. The final VCS results from modulating the smaller of SAS and the regularized NAS with the larger.}
+\label{fig:vcs-architecture}
+\end{figure*}
+
+\begin{abstract}
+Existing video description evaluation metrics fail to capture the long-range chronology and semantic alignment essential for long-form descriptions. An effective evaluation metric for long-form descriptions must (i) assess global thematic alignment, (ii) measure local semantic alignment, and (iii) evaluate chronological alignment while detecting corrupted content. We introduce Video Comprehension Score (VCS), a reference-based metric, which directly addresses these evaluation requirements through three components: Global Alignment Score for thematic alignment, Local Alignment Score for local semantic alignment, and Narrative Alignment Score for chronological alignment with adjustable tolerance. We evaluate VCS on two large-scale synthetic datasets designed to test corruption detection and cross-author consistency. VCS consistently outperforms traditional metrics on corruption detection tasks, being the only metric capable of distinguishing valid variations from invalid corruptions. On cross-author consistency tasks, VCS is the only metric that consistently produces scores $>$80\% regardless of which authorial reference is used for evaluation. VCS$_{\text{short}}$, our implementation for short-form descriptions, attains state-of-the-art human correlation on VATEX-EVAL in the 9-ref setting (Kendall's $\tau = 41.5$, Spearman's $\rho = 52.8$) and competitive results in the 1-ref setting (Kendall's $\tau = 30.0$, Spearman's $\rho = 38.1$). These results demonstrate VCS effectiveness for evaluating both long-form and short-form video descriptions.
+\end{abstract}
+
+% Uncomment the following to link to your code, datasets, an extended version or similar.
+% You must keep this block between (not within) the abstract and the main body of the paper.
+% \begin{links}
+%     \link{Code}{https://aaai.org/example/code}
+%     \link{Datasets}{https://aaai.org/example/datasets}
+%     \link{Extended version}{https://aaai.org/example/extended-version}
+% \end{links}
+
+\section{Introduction}
+
+Recent advancements in Large Video Language Models (LVLMs) \citep{Yuan2025Tarsier2,Shen2025LongVU,Ataallah2024Goldfish,Chen2025LongVILA} have enhanced automated video comprehension, enabling long-form description generation from long videos. However, exploratory analysis on long videos reveals that LVLMs frequently (i) miss global narrative structure, (ii) fail to capture local events, and (iii) fail to establish temporal connections while hallucinating content. These gaps indicate LVLMs lack true video comprehension, raising the question: how can we evaluate models' video comprehension? Current benchmarks utilize question-answering formats \citep{wu2024longvideobench,ataallah2024infinibench,nagrani2025neptune} or short-form description comparisons for short videos \citep{wyzs:24,chen:acl11,ZhXuCoAAAI18}, both inadequate to evaluate models' true video comprehension ability. Evaluating genuine comprehension demands shifting to a methodology that processes long or complex videos and requires models to generate long-form descriptions. This approach renders superficial frame-level analysis insufficient, compelling models to instead generate outputs that capture global narrative structure, detail specific local events, and establish their temporal relationships. The quality of these generated descriptions can then be evaluated against the source video or human-written descriptions.
+
+Description-based evaluation methods fall into four categories, each struggling with fundamental aspects of long-form evaluation. N-gram metrics such as BLEU \citep{p:02}, METEOR \citep{bl:05}, CIDEr \citep{v:15}, and ROUGE \citep{l:04} rely on lexical overlap, which not only unfairly penalizes legitimate paraphrases but also rewards superficial word-level matches between descriptions with entirely different global narratives. Embedding-based metrics like BERTScore \citep{z:20} and SBERT \citep{r:19} address lexical limitations through semantic similarity but overlook chronological alignment and local fine-grained details, allowing misordered events and subtle errors to remain undetected. Multimodal metrics such as EMScore \citep{syxl:22} enable direct comparison against source video content but struggle with long videos and long-form descriptions. LLM-based metrics such as CLAIR \citep{chan:23} and AutoDQ \citep{wyzs:24} provide deeper insights but often do not evaluate the chronology of events while suffering from consistency issues.
+
+To address these limitations, we introduce VCS with three components:
+\begin{enumerate}
+\item \textbf{Global Alignment Score (GAS)}: Measures global thematic alignment.
+\item \textbf{Local Alignment Score (LAS)}: Assesses local semantic alignment.
+\item \textbf{Narrative Alignment Score (NAS)}: Evaluates chronological alignment using configurable Local Narrative Tolerance (LNT).
+\end{enumerate}
+
+VCS combines these three components to provide comprehensive evaluation: GAS and LAS form the Semantic Alignment Score (SAS), which integrates with NAS to produce the final VCS score. We also present VCS$_{\text{short}}$, which applies the same framework to short-form descriptions.
+
+To evaluate VCS, we need datasets of long-form video descriptions paired with quality assessments—but no such datasets exist. Although creating a human-annotated dataset with quality ratings would be ideal, it is impractical: producing and reviewing long-form descriptions is costly and time-consuming, and annotator agreement declines sharply as description length increases. We therefore constructed a large-scale synthetic dataset from the MPII Movie Description Dataset \citep{rohrbach2015dataset} via ChatGPT-4o. From this dataset, we derived two test sets: a Corruption Detection Test Set to evaluate VCS ability to distinguish valid variations from invalid corruptions, and a Cross-Author Consistency Test Set to assess robustness across different authorial styles. VCS consistently outperforms traditional metrics on corruption detection tasks. To assess human correlation, we evaluate VCS$_{\text{short}}$ on VATEX-EVAL \citep{syxl:22}, where it achieves state-of-the-art results. These results demonstrate VCS effectiveness for robust evaluation of both long-form and short-form video descriptions.
+
+Our primary contributions include:
+\begin{itemize}
+\item A robust metric (VCS) for both long-form and short-form video descriptions.
+\item Configurable LNT and chunk size parameters to govern chronological strictness and comparison granularity.
+\end{itemize}
+
+\section{Related Work}
+
+Traditional n-gram-based metrics such as BLEU \citep{p:02}, ROUGE \citep{l:04}, and METEOR \citep{bl:05} evaluate text generation through lexical overlap and local word order. BLEU measures n-gram precision with brevity penalties, capturing local ordering but missing event-level chronology and struggling with expressive variability. ROUGE variants compute precision, recall, and F1-scores: ROUGE-N evaluates n-gram overlap, ROUGE-L computes Longest Common Subsequence at summary-level, and ROUGE-Lsum calculates sentence-level LCS by splitting at newlines. While preserving sequential information, they miss event-level chronology and remain sensitive to expressive variability. METEOR addresses expressive variability via synonyms and stems, computing recall-weighted F-scores with fragmentation penalties, but similarly misses event-level chronology. CIDEr \citep{v:15} uses consensus-based TF-IDF weighting across multiple references but proves impractical for long-form descriptions due to labor-intensive annotation. SPICE \citep{afjg:16} evaluates semantic propositions using graph overlaps, effectively handling paraphrasing; however, being designed for static images, it cannot be directly applied to videos and neglects narrative chronology critical for video descriptions.
+
+Embedding-based metrics compare texts in semantic vector spaces, leveraging pretrained models to capture semantic similarity beyond lexical matches. BERTScore computes token-level similarity using contextualized BERT embeddings, aggregating optimal alignments into precision, recall, and F1-scores, while SBERT employs siamese networks with mean-pooling for sentence-level embeddings, but both address expressive variability by recognizing paraphrases yet are constrained by limited context windows, complicating their direct application to long-form descriptions. Recent decoder-based models such as NV-Embed-v2 \citep{l:24}, Linq-Embed-Mistral \citep{cklg:24}, SFR-Embedding-Mistral \citep{mljx:24}, and Jasper and Stella \citep{zlw:24} leverage autoregressive LLM architectures with bidirectional attention, offering significantly larger context windows and robust global embeddings, excelling at paragraph-level semantic assessments. However, reliance on global embeddings and cosine similarity overlooks local content alignment, detailed information accuracy, and chronological alignment.
+
+Multimodal embedding metrics like EMScore \citep{syxl:22} and PAC-S \citep{sbc:23} employ vision-language models such as CLIP \citep{Radford2021LearningTV} to evaluate semantic alignment between visuals and generated captions, addressing expressive variability through direct image-caption comparison, thus bypassing reference captions. EMScore computes video-caption similarity through dual-level matching: coarse-grained alignment between video and caption embeddings, and fine-grained matching between frames and words, calculating precision, recall, and F1-scores via cosine similarity. PAC-S fine-tunes CLIP through positive-augmented contrastive learning with synthetic image-text pairs, then computes cosine similarity scores from the enhanced model. Despite their effectiveness in short-form descriptions, these metrics face computational challenges and methodological limitations when scaling to long-form descriptions.
+
+Recent evaluation approaches increasingly leverage Large Language Models (LLMs), categorized into component-based and holistic judge methods. Component-based methods such as AutoDQ \citep{wyzs:24} extract events from descriptions using ChatGPT, then compute precision and recall through entailment analysis comparing extracted events between texts, while VAD-Score \citep{dp:25} employs LLMs for semantic extraction and scoring of events, subjects, and objects, effectively addressing expressive variability but missing chronological evaluation. Holistic methods such as CapScore \citep{li:24} prompt GPT-4 to score caption similarity and quality, CapArena‑Auto Score \citep{cheng:25} uses GPT-4o for pairwise evaluation battles, and CLAIR \citep{chan:23} employs zero-shot prompting for similarity scores with interpretable reasoning. However, these methods suffer from ambiguity in score calibration, sensitivity to prompting nuances, consistency issues across model versions, limited interpretability, and practical constraints including reproducibility and cost.
+
+\section{Methodology}
+\label{sec:methodology_vcs}
+
+Figure~\ref{fig:vcs-architecture} shows the VCS pipeline, which computes semantic and narrative alignment between reference and generated descriptions to achieve comprehensive long-form video description evaluation.
+
+\paragraph{Global Alignment Score (GAS)}
+VCS computes GAS to capture global thematic alignment between reference and generated descriptions. Given input texts $T_{ref}$ and $T_{gen}$, we encode each description using NV-Embed-v2. The GAS is computed as:
+
+\begin{equation} \label{eq:gas_revised}
+\text{GAS} = \frac{\mathbf{E}_{ref} \cdot \mathbf{E}_{gen}}{\|\mathbf{E}_{ref}\| \|\mathbf{E}_{gen}\|}
+\end{equation}
+
+\paragraph{Text Preprocessing for Chunk-Level Analysis}
+However, GAS lacks sensitivity to fine-grained details and chronological consistency. To enable fine-grained analysis, VCS applies punctuation removal and Segment Any Text (SaT)~\citep{frohmann-etal-2024-segment} segmentation to $T_{ref}$ and $T_{gen}$, producing semantic segments $S_{ref}$ and $S_{gen}$. We group $k$ consecutive segments into chunks $C_{ref} = \{c_1^{ref}, ..., c_{N_{ref}}^{ref}\}$ and $C_{gen} = \{c_1^{gen}, ..., c_{N_{gen}}^{gen}\}$, embedded using NV-Embed-v2 to yield matrices $\mathbf{E}_{C_{ref}} \in \mathbb{R}^{N_{ref} \times D}$ and $\mathbf{E}_{C_{gen}} \in \mathbb{R}^{N_{gen} \times D}$.
+
+\paragraph{Defining Mapping Windows}
+Before establishing chunk correspondences for fine-grained assessment, VCS constructs a similarity matrix to enable optimal alignments. Using $\mathbf{E}_{C_{ref}}$ and $\mathbf{E}_{C_{gen}}$, we compute similarity matrix $\mathbf{S} \in \mathbb{R}^{N_{ref} \times N_{gen}}$ where $S_{i,j} = \cos(\mathbf{E}_{C_{ref}}[i], \mathbf{E}_{C_{gen}}[j])$ represents the cosine similarity between the $i$-th reference chunk and $j$-th generated chunk.
+
+However, before selecting the best match for each chunk, VCS defines Mapping Windows (MW) that constrain the search space within this similarity matrix. This concept stems from empirical observations: when computing pairwise chunk embeddings between identical long-form descriptions, the resulting similarity matrix exhibits a clear diagonal structure where $C_1^{ref}$ maps to $C_1^{gen}$, $C_2^{ref}$ maps to $C_2^{gen}$, and so on, with this diagonal pattern stretching or compressing proportionally in brevity or verbity cases. Hence, for given chunk counts $N_{ref}$ and $N_{gen}$, we define this diagonal search space and call it Mapping Windows—regions where each chunk should ideally map.
+
+VCS identifies the longer sequence as $\max(N_{ref}, N_{gen})$ and the shorter sequence as $\min(N_{ref}, N_{gen})$. We compute slope $s = \text{longer}/\text{shorter}$ and base window height $h_{mw} = \lceil s \rceil$. The algorithm creates direct windows by mapping each position $i$ in the shorter sequence to a window of height $h_{mw}$ in the longer sequence, spanning range $[\lfloor i \cdot s \rfloor, \min(\lfloor i \cdot s \rfloor + h_{mw}, \text{longer}))$ with proportional scaling. Reverse windows invert this mapping: for each position in the longer sequence, we determine which positions in the shorter sequence include it. VCS assigns Precision Windows ($MW_p$) and Recall Windows ($MW_r$) based on sequence direction: when $N_{ref} \geq N_{gen}$, precision uses direct windows and recall uses reverse windows; otherwise, assignments are reversed.
+
+\paragraph{Best Matching Algorithm}
+Having established Mapping Windows within the similarity matrix $\mathbf{S}$, VCS pairs each generated chunk with its best reference counterpart, and vice versa. Naively selecting the highest-similarity reference for each generated chunk leads to semantic collision and semantic ambiguity. Semantic collision occurs when a single chunk exhibits identical similarity to multiple counterparts, while semantic ambiguity arises when a chunk achieves nearly equal similarity with multiple candidates. Both issues stem from repeated events or superficial lexical overlap, obscuring true narrative counterparts. For instance, when descriptions contain repeated events (e.g., multiple similar actions or recurring themes), $C_1^{gen}$ may match $C_1^{ref}$ with 0.78 similarity and $C_9^{ref}$ with 0.80 similarity, while $C_9^{gen}$ similarly matches both chunks with high scores. Naive selection pairs $C_1^{gen} \rightarrow C_9^{ref}$ and $C_9^{gen} \rightarrow C_1^{ref}$ based on maximum similarity, when chronologically correct matches should preserve temporal order: $C_1^{gen} \rightarrow C_1^{ref}$ and $C_9^{gen} \rightarrow C_9^{ref}$.
+
+VCS resolves these issues through a Best-Matching Algorithm that combines adaptive context filtering with mapping-window constraints. Adaptive context filtering first determines a candidate set around the maximum similarity rather than committing immediately to the top score. Two user-defined parameters control this process: the context cutoff $\tau_{ctx}$ (default 0.6) and the context window control $k_{ctx}$ (default 4). Similarities below the cutoff receive no context expansion, while those above it define a context window whose width is computed as
+
+\begin{equation}
+w_{ctx} = \frac{(1-\tau_{ctx})-(1-s_{max})}{s_{max} \cdot k_{ctx}},
+\end{equation}
+
+where $s_{max}$ is the maximum similarity for the chunk. Higher $s_{max}$ values yield broader context windows because semantic distinctions become more nuanced at higher similarities. At perfect similarity ($s_{max} = 1.0$), a 0.1 difference often reflects minor lexical variations between semantically equivalent content. However, at lower similarities like 0.7, we can attribute small differences (0.7 vs 0.68) to lexical variations, but larger differences (0.7 vs 0.6) represent substantial semantic gaps. Therefore, $s_{max} = 0.7$ receives a narrower context window (approximately 0.03) compared to perfect similarity to avoid grouping semantically distinct chunks. All candidates within $s_{max} - w_{ctx}$ enter the pool for selection. Mapping-window constraints then enforce temporal alignment: among the candidate matches, the algorithm chooses the chunk closest to the mapping-window boundary of the target chunk, breaking ties by similarity. When $s_{max}$ falls below the cutoff, no context expansion occurs, and ties are resolved purely by distance from the mapping-window boundary.
+
+This combination mitigates both collision and ambiguity. In the above example, both $C_1^{ref}$ (0.78) and $C_9^{ref}$ (0.80) enter $C_1^{gen}$'s candidate set. Mapping-window distance reveals $C_1^{ref}$ lies in the correct chronological region, and the algorithm selects it over the higher-scoring $C_9^{ref}$. Similarly, $C_9^{gen}$ pairs with $C_9^{ref}$ rather than $C_1^{ref}$. Executing this procedure for each generated chunk and each reference chunk yields precision best matches $M_P = \{(C_j^{gen}, C_{i^*}^{ref})\}$ and recall best matches $M_R = \{(C_i^{ref}, C_{j^*}^{gen})\}$.
+
+\paragraph{Local Alignment Score (LAS)}
+Having obtained the correspondence sets $M_P$ and $M_R$ from the Best-Matching Algorithm, VCS computes the LAS by averaging cosine similarities of matched chunk pairs. The precision component $LAS_P$ evaluates how well generated text aligns with reference text, while recall component $LAS_R$ evaluates the reverse. LAS is their harmonic mean:
+
+\begin{equation}
+LAS = \frac{2 \cdot LAS_P \cdot LAS_R}{LAS_P + LAS_R}
+\end{equation}
+
+\paragraph{Narrative Alignment Score (NAS)}
+However, LAS remains insensitive to chronological ordering and exhibits limited sensitivity to missing or extra content. While LAS performs local semantic alignment and can detect content variations, its reliance on semantic similarity averaging means that even weak semantic matches contribute to the overall score, reducing its ability to strongly penalize missing or extraneous content. To mitigate both limitations, VCS introduces NAS that evaluates chronological consistency while enhancing sensitivity to content gaps and additions through narrative alignment assessment. NAS comprises four components: Distance-based NAS ($NAS_D$), Line-based NAS ($NAS_L$), a window regularizer, and the user-controlled Local Narrative Tolerance (LNT) parameter.
+
+\paragraph{Defining Local Narrative Tolerance (LNT)}
+Before assessing narrative alignment, VCS defines a user-controlled parameter called LNT. This concept stems from the observation that video narratives often permit multiple valid orderings and descriptive variations where temporally adjacent or concurrent events can be described in different sequences and detail levels without compromising narrative coherence. Complex video scenes frequently contain multiple actors and objects performing concurrent actions, where these details can be expressed in multiple valid orders and varying descriptive granularity—from highly detailed to moderate to sparse descriptions. To accommodate this inherent flexibility, VCS employs LNT as a tolerance parameter that defines acceptable deviation from strict chronological order and descriptive consistency, allowing higher LNT values to provide tolerance for both narrative reordering and descriptive variability when dense descriptions describe scenes with slightly different detail levels.
+
+\paragraph{Distance-based NAS ($NAS_D$)}
+Mapping Windows define where chunks should ideally match if the narrative structure is preserved between reference and generated descriptions. $NAS_D$ formalizes this intuition by penalizing each chunk based on its distance from the ideal region defined by the Mapping Windows. For precision evaluation, $NAS_D$ uses correspondence set $M_P$ and precision Mapping Windows $MW_p$; for recall evaluation, it uses correspondence set $M_R$ and recall Mapping Windows $MW_r$.
+
+However, before computing penalties, VCS applies Local Narrative Tolerance (LNT) to account for natural narrative variations. LNT expands each Mapping Window with penalty-free zones, recognizing that chunks matching within these expanded regions represent acceptable chronological alignments. We first compute the LNT window height:
+
+\begin{equation}
+h_{LNT} = \lceil y/x \rceil - 1[y > x \land 0 < \text{frac}(y/x) \leq 0.5]
+\end{equation}
+
+where $y = N_{ref}$ and $x = N_{gen}$ for $NAS_{D,prec}$, and the reverse for $NAS_{D,rec}$. A user-defined multiplier $\tau_{LNT} \geq 0$ expands each Mapping Window by $\tau_{LNT} \cdot h_{LNT}$ rows. Chunks matching within this expanded window receive zero penalty.
+
+For chunks outside this tolerance zone, distance penalties are calculated from their offset from the Mapping Window boundary. Each evaluation chunk has a corresponding Mapping Window; if the matched chunk appears above the window, the raw offset measures rows above the window start; if below, it measures rows below the window end. The penalty becomes zero if this offset falls within the LNT tolerance, otherwise it equals the offset normalized by timeline length.
+
+Let $P_{total}$ sum all penalties across matched pairs and $P_{max}$ represent the worst-case penalty when all chunks drift to furthest positions. The orientation score is computed as:
+
+\begin{equation}
+NAS_{D,*} = 1 - \frac{P_{total}}{P_{max}}
+\end{equation}
+
+For precision, $eval = gen$, $opp = ref$, $M_{eval} = M_P$, and $MW_{eval} = MW_p$; for recall, $eval = ref$, $opp = gen$, $M_{eval} = M_R$, and $MW_{eval} = MW_r$. The final score combines both orientations:
+
+\begin{equation}
+NAS_D = \frac{2 \cdot NAS_{D,prec} \cdot NAS_{D,rec}}{NAS_{D,prec} + NAS_{D,rec}}
+\end{equation}
+
+\paragraph{Line-based NAS ($NAS_L$)}
+Treating each matched pair as a vertex $(x_i, y_i)$, VCS compares the path that connects them to an ideal narrative band bounded by the shortest and longest feasible paths constrained by the Mapping Windows. Dynamic programming gives the floor length $L_{min}$ and ceil length $L_{max}$; their vertical increments $\Delta y_{x_i}^{\text{floor}}$ are cached for later clipping. With source length $N_{src}$ and target length $N_{tgt}$ (equal to $N_{ref}$ or $N_{gen}$ depending on orientation) the base window height is $h_{mw} = \lceil N_{tgt}/N_{src} \rceil$. This height in turn defines an LNT kernel $\omega_0$ and its expanded version $\omega_{LNT} = \omega_0 + \kappa \tau_{LNT}$, where the scale $\kappa$ is $h_{mw}$ or $h_{mw} - 1$ exactly as in the implementation. For consecutive vertices the segment length is
+
+\begin{equation}
+\ell_i = \begin{cases}
+\sqrt{\Delta x_i^2 + \Delta y_i^2}, & 0 \leq |\Delta y_i|^* \leq \omega_0, \\
+\sqrt{\Delta x_i^2 + |\Delta y_{x_i}^{\text{floor}}|^2}, & \omega_0 < |\Delta y_i|^* \leq \omega_{LNT}, \\
+0, & \text{otherwise},
+\end{cases}
+\end{equation}
+
+where $|\Delta y_i|^* = |\Delta y_i|$ if $\tau_{LNT} > 0$ and $|\Delta y_i|^* = \Delta y_i$ when $\tau_{LNT} = 0$. Summing $\ell_i$ gives the realised length $L_{act}$. The orientation score is
+
+\begin{equation}
+NAS_{L,*} = \begin{cases}
+1, & L_{min} \leq L_{act} \leq L_{max}, \\
+L_{act}/L_{min}, & L_{act} < L_{min}, \\
+L_{max}/L_{act}, & L_{act} > L_{max}.
+\end{cases}
+\end{equation}
+
+The two orientations are again combined with a harmonic mean to obtain $NAS_L$.
+
+\paragraph{Window-area Regulariser ($R_w$)}
+Let $W$ be the Mapping-Window set that spans the longer vertical timeline ($MW_{rec}$ if $N_{gen} > N_{ref}$, otherwise $MW_{prec}$). With window heights $h_j$, the covered area is $A_{MW} = \sum_{w_j \in W} h_j$; the full grid area is $A_{timeline} = N_{ref} N_{gen}$. Setting $a = A_{MW}/A_{timeline}$ and $a_{min} = 1/\max(N_{ref}, N_{gen})$, we regularise the window width by
+
+\begin{equation}
+R_w = \text{clip}[(a - a_{min})/(0.5 - a_{min}), 0, 1].
+\end{equation}
+
+\paragraph{Final NAS}
+The distance- and line-based views are first merged: $NAS_{F1} = 2 NAS_D NAS_L/(NAS_D + NAS_L)$ (defined as 0 when both inputs are zero). Overly permissive windows are then discounted:
+
+\begin{equation}
+NAS_{final} = \begin{cases}
+(NAS_{F1} - R_w)/(1 - R_w), & NAS_{F1} > R_w, \\
+0, & \text{otherwise}.
+\end{cases}
+\end{equation}
+
+Thus NAS captures positional fidelity ($NAS_D$), global path coherence ($NAS_L$), and penalises inflated scores that could arise from excessively wide Mapping Windows, all while respecting the established notation from the preceding sections.
+
+
+when $NAS > R_W$ and $R_W < 1$, ensuring meaningful chronological assessment despite length variations.
+
+\paragraph{Final VCS Aggregation}
+The complete VCS integrates semantic and narrative alignment through careful score combination. GAS is modulated by LAS to yield Semantic Alignment Score ($SAS$):
+
+\begin{equation} \label{eq:sas_revised} 
+SAS = \frac{GAS - (1 - LAS)}{LAS}
+\end{equation}
+
+when $LAS > 0$ and the numerator is positive, otherwise $SAS = 0$. This ensures high global similarity requires supporting local semantic agreement. The final score synthesizes $SAS$ with $NAS_{reg}$ through adaptive weighting:
+
+The final VCS uses adaptive weighting with intermediate variables:
+\begin{align}
+S_{min} &= \min(SAS, NAS_{reg}) \label{eq:s_min} \\
+S_{max} &= \max(SAS, NAS_{reg}) \label{eq:s_max} \\
+VCS &= \frac{S_{min} - (1 - S_{max})}{S_{max}} \label{eq:vcs_final}
+\end{align}
+
+when both components are positive and the numerator exceeds zero, otherwise $VCS = 0$.
+
+\paragraph{Extension for Short-Form Descriptions (VCS$_{short}$)}
+For short-form description evaluation, VCS$_{short}$ adapts the complete VCS methodology to operate at word-level granularity. Input texts undergo cleaning to remove punctuation and stop words, then tokenization into individual words that serve as fundamental elements. These words replace multi-word chunks in all alignment and scoring processes while maintaining identical metric computation and aggregation logic, enabling consistent evaluation across different description lengths.
+
+\section{Dataset Construction}
+
+We construct two synthetic datasets from MPII-MD \citep{rohrbach2015dataset} containing 94 movies with 68,000 annotated segments. We extract 1,390 consecutive scene groups (~500 words each) and use ChatGPT-4o to synthesize coherent narrative descriptions, yielding our base dataset.
+
+\subsection{Corruption Detection Test Set}
+We generate 10 valid variations and 10 invalid corruptions per base description to evaluate VCS ability to distinguish legitimate stylistic changes from content errors. Valid variations include lexical variation, voice transformation, paraphrasing, abstraction (50\%/70\% reduction), elaboration (130\%/150\% expansion), action decomposition/aggregation, and attribute injection while preserving narrative integrity. Invalid corruptions introduce content errors through SAO distortion, ID summarization, hallucination (50\%/80\% unrelated segments), omission (50\%/80\% deletion), sequence inversion, local/global permutation, and sequence rotation. All transformations employ SAT segmentation while preserving segment content integrity, producing 27,800 test instances.
+
+\subsection{Cross-Author Consistency Test Set}
+We use the same 1,390 scene groups with ChatGPT-4o as Author 1 baseline and prompt Grok 3, Claude Sonnet 3.5, and Mistral-Large to generate authorial variations. Each model applies systematic transformations including paraphrasing, voice switching, brevity/verbosity adjustments, action scaling, attribute modification, detail variation, and scene expansion while preserving chronological order and factual content. This produces 5,560 descriptions (1,390 × 4 authors) for evaluating metric robustness across writing styles.
+
+\section{Experiments}
+
+We conduct comprehensive experiments to evaluate VCS performance on corruption detection tasks. Our evaluation compares VCS against established video description metrics to assess its ability to distinguish valid narrative variations from invalid corruptions.
+
+\subsection{Experimental Setup}
+
+We evaluate VCS alongside four rule-based metrics: BLEU \citep{p:02}, ROUGE-L \citep{l:04}, METEOR \citep{bl:05}, and CIDEr \citep{v:15}, and two embedding-based metrics: BERTScore \citep{z:20} and SBERT \citep{r:19}. For BERTScore, we use the RoBERTa-base backbone with F1-measure configuration. For SBERT, we employ the all-MiniLM-L6-v2 model for sentence embeddings. VCS uses NV-Embed-v2 for text embeddings with chunk size $k=3$ and Local Narrative Tolerance $\tau_{LNT}=0.1$ across all experiments.
+
+The Corruption Detection Test Set provides ground-truth labels where valid variations receive score 1 and invalid corruptions receive score 0. For each metric, we compute scores between base descriptions and their corresponding variations/corruptions, then evaluate classification performance using accuracy, precision, recall, and F1-score with threshold 0.5.
+
+\subsection{Corruption Detection Results}
+
+Table~\ref{tab:corruption-results} presents the performance of VCS compared to traditional metrics across various text transformations. The transformations are grouped into Valid Test Cases (legitimate variations that should receive high scores) and Invalid Test Cases (corruptions that should receive low scores). For each metric, the top value represents the mean and the bottom value represents the standard deviation.
+
+\begin{table*}[t]
+\centering
+\setlength{\tabcolsep}{0.75mm}
+\normalsize
+\begin{tabular}{l|cccccccccc@{\hskip 4pt}|cccccccccc}
+\hline
+\textbf{Metric} & \multicolumn{10}{c@{\hskip 4pt}}{\textbf{Valid Test Cases}} & \multicolumn{10}{c}{\textbf{Invalid Test Cases}} \\
+\cline{2-11} \cline{12-21}
+& \rotatebox{85}{\small\textbf{Lexical Variation}} &
+\rotatebox{85}{\small\textbf{Voice Transformation}} &
+\rotatebox{85}{\small\textbf{Paraphrasing}} &
+\rotatebox{85}{\small\textbf{Low-Abstraction}} &
+\rotatebox{85}{\small\textbf{High-Abstraction}} &
+\rotatebox{85}{\small\textbf{Low-Elaboration}} &
+\rotatebox{85}{\small\textbf{High-Elaboration}} &
+\rotatebox{85}{\small\textbf{Action Decomposition}} &
+\rotatebox{85}{\small\textbf{Action Aggregation}} &
+\rotatebox{85}{\small\textbf{Attribute Injection}} &
+\rotatebox{85}{\small\textbf{Minor Hallucination}} &
+\rotatebox{85}{\small\textbf{Major Hallucination}} &
+\rotatebox{85}{\small\textbf{Minor Omission}} &
+\rotatebox{85}{\small\textbf{Major Omission}} &
+\rotatebox{85}{\small\textbf{SAO Distortion}} &
+\rotatebox{85}{\small\textbf{Summarization}} &
+\rotatebox{85}{\small\textbf{Local Permutation}} &
+\rotatebox{85}{\small\textbf{Global Permutation}} &
+\rotatebox{85}{\small\textbf{Sequence Inversion}} &
+\rotatebox{85}{\small\textbf{Sequence Rotation}} \\
+\hline
+
+\multirow{2}{*}{BLEU-1} & {\normalsize 83.1} & {\normalsize 79.8} & {\normalsize 69.3} & {\normalsize 38.3} & {\normalsize 23.4} & {\normalsize 66.5} & {\normalsize 55.7} & {\normalsize 57.2} & {\normalsize 34.0} & {\normalsize 69.5} & {\normalsize 53.9} & {\normalsize 43.7} & {\normalsize 38.9} & {\normalsize 3.7} & {\normalsize 49.4} & {\normalsize 8.1} & {\normalsize 99.6} & {\normalsize 99.7} & {\normalsize 99.7} & {\normalsize 99.7} \\
+& {\footnotesize ±8.5} & {\footnotesize ±5.7} & {\footnotesize ±5.6} & {\footnotesize ±14} & {\footnotesize ±11} & {\footnotesize ±8.9} & {\footnotesize ±7.2} & {\footnotesize ±8.9} & {\footnotesize ±12} & {\footnotesize ±6.5} & {\footnotesize ±6.9} & {\footnotesize ±7.0} & {\footnotesize ±7.1} & {\footnotesize ±2.8} & {\footnotesize ±4.6} & {\footnotesize ±5.4} & {\footnotesize ±0.6} & {\footnotesize ±0.5} & {\footnotesize ±0.5} & {\footnotesize ±0.5} \\
+\cline{2-21}
+
+\multirow{2}{*}{BLEU-4} & {\normalsize 63.2} & {\normalsize 52.8} & {\normalsize 34.9} & {\normalsize 18.6} & {\normalsize 9.40} & {\normalsize 36.5} & {\normalsize 25.5} & {\normalsize 25.1} & {\normalsize 13.1} & {\normalsize 62.5} & {\normalsize 53.5} & {\normalsize 43.3} & {\normalsize 38.4} & {\normalsize 3.60} & {\normalsize 10.5} & {\normalsize 2.20} & {\normalsize 90.0} & {\normalsize 90.4} & {\normalsize 90.2} & {\normalsize 99.2} \\
+& {\footnotesize ±15} & {\footnotesize ±10} & {\footnotesize ±8.3} & {\footnotesize ±11} & {\footnotesize ±7.0} & {\footnotesize ±14} & {\footnotesize ±9.1} & {\footnotesize ±10} & {\footnotesize ±8.3} & {\footnotesize ±8.3} & {\footnotesize ±6.9} & {\footnotesize ±7.0} & {\footnotesize ±7.1} & {\footnotesize ±2.7} & {\footnotesize ±4.6} & {\footnotesize ±2.1} & {\footnotesize ±3.7} & {\footnotesize ±3.7} & {\footnotesize ±3.6} & {\footnotesize ±1.0} \\
+\cline{2-21}
+
+\multirow{2}{*}{METEOR} & {\normalsize 88.1} & {\normalsize 87.0} & {\normalsize 65.5} & {\normalsize 39.2} & {\normalsize 29.5} & {\normalsize 69.7} & {\normalsize 63.2} & {\normalsize 58.7} & {\normalsize 33.4} & {\normalsize 86.3} & {\normalsize 82.6} & {\normalsize 79.4} & {\normalsize 47.1} & {\normalsize 21.0} & {\normalsize 50.2} & {\normalsize 17.7} & {\normalsize 83.7} & {\normalsize 64.4} & {\normalsize 58.9} & {\normalsize 63.2} \\
+& {\footnotesize ±7.1} & {\footnotesize ±5.3} & {\footnotesize ±8.1} & {\footnotesize ±11} & {\footnotesize ±8.2} & {\footnotesize ±11} & {\footnotesize ±8.6} & {\footnotesize ±8.8} & {\footnotesize ±9.0} & {\footnotesize ±4.4} & {\footnotesize ±2.4} & {\footnotesize ±2.9} & {\footnotesize ±4.6} & {\footnotesize ±3.7} & {\footnotesize ±6.3} & {\footnotesize ±4.5} & {\footnotesize ±2.0} & {\footnotesize ±3.4} & {\footnotesize ±3.2} & {\footnotesize ±3.7} \\
+\cline{2-21}
+
+\multirow{2}{*}{ROUGE-1} & {\normalsize 84.0} & {\normalsize 89.7} & {\normalsize 74.9} & {\normalsize 64.0} & {\normalsize 54.1} & {\normalsize 77.3} & {\normalsize 69.9} & {\normalsize 69.5} & {\normalsize 58.1} & {\normalsize 81.8} & {\normalsize 69.7} & {\normalsize 60.4} & {\normalsize 67.0} & {\normalsize 36.0} & {\normalsize 51.4} & {\normalsize 37.2} & {\normalsize 98.9} & {\normalsize 99.0} & {\normalsize 99.0} & {\normalsize 99.0} \\
+& {\footnotesize ±8.1} & {\footnotesize ±3.1} & {\footnotesize ±4.3} & {\footnotesize ±9.6} & {\footnotesize ±9.2} & {\footnotesize ±6.8} & {\footnotesize ±6.0} & {\footnotesize ±7.1} & {\footnotesize ±9.3} & {\footnotesize ±4.6} & {\footnotesize ±5.9} & {\footnotesize ±7.0} & {\footnotesize ±4.3} & {\footnotesize ±5.3} & {\footnotesize ±4.4} & {\footnotesize ±7.0} & {\footnotesize ±0.9} & {\footnotesize ±0.9} & {\footnotesize ±0.9} & {\footnotesize ±0.9} \\
+\cline{2-21}
+
+\multirow{2}{*}{ROUGE-4} & {\normalsize 50.3} & {\normalsize 41.0} & {\normalsize 20.4} & {\normalsize 15.7} & {\normalsize 8.90} & {\normalsize 25.6} & {\normalsize 16.4} & {\normalsize 15.3} & {\normalsize 9.50} & {\normalsize 66.3} & {\normalsize 67.3} & {\normalsize 58.4} & {\normalsize 64.2} & {\normalsize 33.4} & {\normalsize 2.50} & {\normalsize 2.90} & {\normalsize 78.9} & {\normalsize 79.6} & {\normalsize 79.2} & {\normalsize 96.2} \\
+& {\footnotesize ±18} & {\footnotesize ±12} & {\footnotesize ±7.5} & {\footnotesize ±10} & {\footnotesize ±6.2} & {\footnotesize ±15} & {\footnotesize ±8.9} & {\footnotesize ±10} & {\footnotesize ±6.7} & {\footnotesize ±9.3} & {\footnotesize ±6.1} & {\footnotesize ±7.0} & {\footnotesize ±4.8} & {\footnotesize ±5.5} & {\footnotesize ±2.0} & {\footnotesize ±2.3} & {\footnotesize ±6.6} & {\footnotesize ±6.6} & {\footnotesize ±6.6} & {\footnotesize ±2.7} \\
+\cline{2-21}
+
+\multirow{2}{*}{ROUGE-L} & {\normalsize 83.5} & {\normalsize 75.4} & {\normalsize 67.0} & {\normalsize 55.6} & {\normalsize 45.6} & {\normalsize 69.7} & {\normalsize 60.6} & {\normalsize 57.6} & {\normalsize 45.2} & {\normalsize 81.6} & {\normalsize 69.6} & {\normalsize 60.3} & {\normalsize 66.9} & {\normalsize 36.0} & {\normalsize 47.2} & {\normalsize 27.4} & {\normalsize 65.1} & {\normalsize 36.5} & {\normalsize 23.1} & {\normalsize 53.5} \\
+& {\footnotesize ±8.4} & {\footnotesize ±6.5} & {\footnotesize ±6.0} & {\footnotesize ±11} & {\footnotesize ±9.8} & {\footnotesize ±10} & {\footnotesize ±8.4} & {\footnotesize ±9.6} & {\footnotesize ±10} & {\footnotesize ±4.7} & {\footnotesize ±6.0} & {\footnotesize ±7.0} & {\footnotesize ±4.3} & {\footnotesize ±5.3} & {\footnotesize ±5.4} & {\footnotesize ±6.4} & {\footnotesize ±2.7} & {\footnotesize ±4.6} & {\footnotesize ±2.3} & {\footnotesize ±3.2} \\
+\cline{2-21}
+
+\multirow{2}{*}{ROUGE-Lsum} & {\normalsize 83.8} & {\normalsize 84.7} & {\normalsize 73.4} & {\normalsize 62.1} & {\normalsize 52.1} & {\normalsize 76.0} & {\normalsize 68.4} & {\normalsize 67.5} & {\normalsize 55.4} & {\normalsize 81.8} & {\normalsize 69.7} & {\normalsize 60.4} & {\normalsize 67.0} & {\normalsize 36.0} & {\normalsize 50.7} & {\normalsize 35.2} & {\normalsize 97.7} & {\normalsize 97.7} & {\normalsize 96.7} & {\normalsize 98.8} \\
+& {\footnotesize ±8.2} & {\footnotesize ±4.1} & {\footnotesize ±4.5} & {\footnotesize ±10} & {\footnotesize ±9.4} & {\footnotesize ±7.3} & {\footnotesize ±6.3} & {\footnotesize ±7.4} & {\footnotesize ±9.3} & {\footnotesize ±4.6} & {\footnotesize ±5.9} & {\footnotesize ±7.0} & {\footnotesize ±4.3} & {\footnotesize ±5.3} & {\footnotesize ±4.5} & {\footnotesize ±6.8} & {\footnotesize ±1.7} & {\footnotesize ±1.9} & {\footnotesize ±2.4} & {\footnotesize ±1.1} \\
+\hline
+
+\multirow{2}{*}{VCS$_{C_1|LNT_0}$} & {\normalsize 93.7} & {\normalsize 95.1} & {\normalsize 95.8} & {\normalsize 86.0} & {\normalsize 80.0} & {\normalsize 92.2} & {\normalsize 87.5} & {\normalsize 88.5} & {\normalsize 81.0} & {\normalsize 86.4} & {\normalsize 69.1} & {\normalsize 53.4} & {\normalsize 62.2} & {\normalsize 1.90} & {\normalsize 5.00} & {\normalsize 62.4} & {\normalsize 0.70} & {\normalsize 3.40} & {\normalsize 0.10} & {\normalsize 42.9} \\
+& {\footnotesize ±7.1} & {\footnotesize ±3.7} & {\footnotesize ±2.8} & {\footnotesize ±8.8} & {\footnotesize ±10} & {\footnotesize ±4.6} & {\footnotesize ±5.4} & {\footnotesize ±5.9} & {\footnotesize ±10} & {\footnotesize ±4.7} & {\footnotesize ±6.8} & {\footnotesize ±14} & {\footnotesize ±4.9} & {\footnotesize ±4.9} & {\footnotesize ±10} & {\footnotesize ±18} & {\footnotesize ±2.3} & {\footnotesize ±4.4} & {\footnotesize ±0.8} & {\footnotesize ±2.8} \\
+\cline{2-21}
+
+\multirow{2}{*}{VCS$_{C_1|LNT_1}$} & {\normalsize 94.1} & {\normalsize 96.7} & {\normalsize 96.7} & {\normalsize 90.5} & {\normalsize 86.3} & {\normalsize 93.5} & {\normalsize 88.7} & {\normalsize 90.4} & {\normalsize 86.9} & {\normalsize 86.8} & {\normalsize 70.5} & {\normalsize 54.9} & {\normalsize 68.3} & {\normalsize 6.70} & {\normalsize 5.40} & {\normalsize 73.5} & {\normalsize 76.1} & {\normalsize 15.2} & {\normalsize 43.6} & {\normalsize 43.0} \\
+& {\footnotesize ±7.1} & {\footnotesize ±2.6} & {\footnotesize ±1.8} & {\footnotesize ±5.8} & {\footnotesize ±6.5} & {\footnotesize ±3.9} & {\footnotesize ±5.0} & {\footnotesize ±5.2} & {\footnotesize ±6.9} & {\footnotesize ±4.5} & {\footnotesize ±7.0} & {\footnotesize ±14} & {\footnotesize ±4.6} & {\footnotesize ±10} & {\footnotesize ±10} & {\footnotesize ±12} & {\footnotesize ±6.5} & {\footnotesize ±7.6} & {\footnotesize ±2.4} & {\footnotesize ±2.8} \\
+\hline
+\end{tabular}
+\caption{Corruption detection performance across various text transformations. Valid Test Cases represent legitimate variations that should receive high scores, while Invalid Test Cases represent corruptions that should receive low scores. For each metric, the top value represents the mean and the bottom value represents the standard deviation. VCS consistently outperforms traditional metrics by maintaining high scores for valid variations while effectively detecting corruptions.}
+\label{tab:corruption-results}
+\end{table*}
+
+\subsection{Human Judgment Correlation Results}
+
+Table~\ref{tab:vatex-eval} presents human judgment correlation scores on the VATEX-EVAL dataset, comparing VCS against traditional metrics in both single-reference (1Ref) and multi-reference (9Refs) settings using Kendall's $\tau_b$ and Spearman's $\rho$ correlation coefficients.
+
+\begin{table}[t]
+  \centering
+  \normalsize
+  \setlength{\tabcolsep}{0.75mm}
+  \begin{tabular}{l@{\hspace{0.1mm}}cccc}
+    \hline
+    & \multicolumn{2}{c}{\textbf{1Ref}} & \multicolumn{2}{c}{\textbf{9Refs}} \\
+    \cline{2-3} \cline{4-5}
+    & Kendall $\tau_b$ & Spearman $\rho$ & Kendall $\tau_b$ & Spearman $\rho$ \\
+    \hline
+    BLEU-1 & 12.2 & 15.9 & 28.9 & 37.0 \\
+    BLEU-4 & 12.6 & 16.4 & 22.4 & 29.5 \\
+    ROUGE & 12.5 & 16.3 & 23.8 & 30.9 \\
+    METEOR & 16.4 & 21.5 & 27.6 & 35.7 \\
+    CIDEr & 17.3 & 22.6 & 27.8 & 36.1 \\
+    \hline
+    BERT-S & 18.2 & 23.7 & 29.3 & 37.8 \\
+    BERT-S++ & 15.2 & 19.8 & 24.4 & 31.7 \\
+    \hline
+    EMScore & 28.6 & 37.1 & 36.8 & 47.2 \\
+    PAC-S & 00.0 & 00.0 & 00.0 & 00.0 \\
+    RefPAC-S & \textbf{31.4} & \textbf{40.5} & 38.1 & 48.8 \\
+    \hline
+    VCS$_{C_1|LNT_0}$ & 00.0 & 00.0 & 00.0 & 00.0 \\
+    VCS$_{C_1|LNT_1}$ & 00.0 & 00.0 & 00.0 & 00.0 \\
+    \hline
+  \end{tabular}
+  \caption{Human judgment correlation scores on VATEX-EVAL dataset.}
+  \label{tab:vatex-eval}
+\end{table}
+
+\subsection{Cross-Author Consistency Results}
+
+Table~\ref{tab:author-consistency} presents performance comparison of different metrics across various authorial combinations. For each metric, the top value represents the mean and the bottom value represents the standard deviation.
+
+\begin{table*}[t]
+  \centering
+  \normalsize
+  \setlength{\tabcolsep}{0.75mm}
+  \begin{tabular}{l@{\hspace{5mm}}*{3}{c}@{\hspace{5mm}}*{3}{c}@{\hspace{5mm}}*{3}{c}@{\hspace{5mm}}*{3}{c}}
+    \hline
+    \textbf{Metric} & \multicolumn{3}{c}{\textbf{Author 1}} & \multicolumn{3}{c}{\textbf{Author 2}} & \multicolumn{3}{c}{\textbf{Author 3}} & \multicolumn{3}{c}{\textbf{Author 4}} \\
+    \cline{2-4} \cline{5-7} \cline{8-10} \cline{11-13}
+                    & A1-A2 & A1-A3 & A1-A4 & A2-A1 & A2-A3 & A2-A4 & A3-A1 & A3-A2 & A3-A4 & A4-A1 & A4-A2 & A4-A3 \\
+    \hline
+    \multirow{2}{*}{BLEU-1} & {\normalsize 45.1} & {\normalsize 46.3} & {\normalsize 52.4} & {\normalsize 46.4} & {\normalsize 39.4} & {\normalsize 50.8} & {\normalsize 43.8} & {\normalsize 33.7} & {\normalsize 40.2} & {\normalsize 53.3} & {\normalsize 50.2} & {\normalsize 44.7} \\
+                    & {\footnotesize ±6.7} & {\footnotesize ±4.3} & {\footnotesize ±9.2} & {\footnotesize ±5.9} & {\footnotesize ±5.0} & {\footnotesize ±5.7} & {\footnotesize ±5.8} & {\footnotesize ±6.8} & {\footnotesize ±9.3} & {\footnotesize ±8.2} & {\footnotesize ±6.3} & {\footnotesize ±6.8} \\
+    \hline
+    \multirow{2}{*}{BLEU-4} & {\normalsize 9.30} & {\normalsize 9.70} & {\normalsize 15.2} & {\normalsize 9.60} & {\normalsize 8.10} & {\normalsize 12.0} & {\normalsize 9.20} & {\normalsize 7.00} & {\normalsize 9.70} & {\normalsize 15.4} & {\normalsize 11.9} & {\normalsize 10.7} \\
+                    & {\footnotesize ±3.5} & {\footnotesize ±2.6} & {\footnotesize ±7.0} & {\footnotesize ±3.5} & {\footnotesize ±2.6} & {\footnotesize ±3.9} & {\footnotesize ±2.6} & {\footnotesize ±2.6} & {\footnotesize ±3.7} & {\footnotesize ±6.9} & {\footnotesize ±3.9} & {\footnotesize ±3.5} \\
+    \hline
+    \multirow{2}{*}{METEOR} & {\normalsize 35.2} & {\normalsize 42.9} & {\normalsize 41.6} & {\normalsize 41.1} & {\normalsize 43.5} & {\normalsize 42.8} & {\normalsize 33.5} & {\normalsize 29.0} & {\normalsize 33.9} & {\normalsize 43.1} & {\normalsize 38.1} & {\normalsize 44.8} \\
+                    & {\footnotesize ±5.0} & {\footnotesize ±3.5} & {\footnotesize ±7.6} & {\footnotesize ±3.8} & {\footnotesize ±3.0} & {\footnotesize ±4.4} & {\footnotesize ±3.3} & {\footnotesize ±3.9} & {\footnotesize ±5.4} & {\footnotesize ±7.5} & {\footnotesize ±6.4} & {\footnotesize ±5.5} \\
+    \hline
+    \multirow{2}{*}{ROUGE-1} & {\normalsize 56.0} & {\normalsize 57.8} & {\normalsize 62.1} & {\normalsize 56.0} & {\normalsize 55.2} & {\normalsize 60.2} & {\normalsize 57.8} & {\normalsize 55.2} & {\normalsize 59.4} & {\normalsize 62.1} & {\normalsize 60.2} & {\normalsize 59.4} \\
+                     & {\footnotesize ±4.8} & {\footnotesize ±3.4} & {\footnotesize ±6.6} & {\footnotesize ±4.8} & {\footnotesize ±4.2} & {\footnotesize ±4.3} & {\footnotesize ±3.4} & {\footnotesize ±4.2} & {\footnotesize ±5.0} & {\footnotesize ±6.6} & {\footnotesize ±4.3} & {\footnotesize ±5.0} \\
+    \hline
+    \multirow{2}{*}{ROUGE-4} & {\normalsize 3.00} & {\normalsize 3.20} & {\normalsize 6.60} & {\normalsize 3.00} & {\normalsize 3.20} & {\normalsize 4.50} & {\normalsize 3.20} & {\normalsize 3.20} & {\normalsize 4.40} & {\normalsize 6.60} & {\normalsize 4.50} & {\normalsize 4.40} \\
+                     & {\footnotesize ±1.8} & {\footnotesize ±1.5} & {\footnotesize ±4.9} & {\footnotesize ±1.8} & {\footnotesize ±1.5} & {\footnotesize ±2.3} & {\footnotesize ±1.5} & {\footnotesize ±1.5} & {\footnotesize ±2.1} & {\footnotesize ±4.9} & {\footnotesize ±2.3} & {\footnotesize ±2.1} \\
+    \hline
+    \multirow{2}{*}{ROUGE-L} & {\normalsize 36.6} & {\normalsize 40.4} & {\normalsize 43.8} & {\normalsize 36.6} & {\normalsize 34.9} & {\normalsize 38.3} & {\normalsize 40.4} & {\normalsize 34.9} & {\normalsize 38.8} & {\normalsize 43.8} & {\normalsize 38.3} & {\normalsize 38.8} \\
+                     & {\footnotesize ±4.9} & {\footnotesize ±3.9} & {\footnotesize ±7.9} & {\footnotesize ±4.9} & {\footnotesize ±4.1} & {\footnotesize ±5.0} & {\footnotesize ±3.9} & {\footnotesize ±4.1} & {\footnotesize ±5.2} & {\footnotesize ±7.9} & {\footnotesize ±5.0} & {\footnotesize ±5.2} \\
+    \hline
+    \multirow{2}{*}{ROUGE-Lsum} & {\normalsize 52.6} & {\normalsize 55.1} & {\normalsize 59.2} & {\normalsize 52.6} & {\normalsize 51.3} & {\normalsize 56.4} & {\normalsize 55.3} & {\normalsize 51.4} & {\normalsize 56.2} & {\normalsize 59.3} & {\normalsize 56.5} & {\normalsize 56.0} \\
+                        & {\footnotesize ±4.7} & {\footnotesize ±3.5} & {\footnotesize ±6.7} & {\footnotesize ±4.8} & {\footnotesize ±4.2} & {\footnotesize ±4.3} & {\footnotesize ±3.5} & {\footnotesize ±4.1} & {\footnotesize ±5.0} & {\footnotesize ±6.7} & {\footnotesize ±4.3} & {\footnotesize ±5.1} \\
+    \hline
+    \multirow{2}{*}{VCS$_{C_1|LNT_0}$} & {\normalsize 76.3} & {\normalsize 77.9} & {\normalsize 74.9} & {\normalsize 76.3} & {\normalsize 75.2} & {\normalsize 76.7} & {\normalsize 77.9} & {\normalsize 75.2} & {\normalsize 76.5} & {\normalsize 74.9} & {\normalsize 76.7} & {\normalsize 76.5} \\
+                         & {\footnotesize ±10} & {\footnotesize ±7.5} & {\footnotesize ±13} & {\footnotesize ±10} & {\footnotesize ±9.6} & {\footnotesize ±11} & {\footnotesize ±7.5} & {\footnotesize ±9.6} & {\footnotesize ±10} & {\footnotesize ±13} & {\footnotesize ±11} & {\footnotesize ±10} \\
+    \hline
+    \multirow{2}{*}{VCS$_{C_1|LNT_1}$} & {\normalsize 82.5} & {\normalsize 80.5} & {\normalsize 81.6} & {\normalsize 82.5} & {\normalsize 79.1} & {\normalsize 83.8} & {\normalsize 80.5} & {\normalsize 79.1} & {\normalsize 81.6} & {\normalsize 81.6} & {\normalsize 83.8} & {\normalsize 81.6} \\
+                         & {\footnotesize ±7.7} & {\footnotesize ±6.5} & {\footnotesize ±10} & {\footnotesize ±7.7} & {\footnotesize ±7.7} & {\footnotesize ±8.8} & {\footnotesize ±6.5} & {\footnotesize ±7.7} & {\footnotesize ±8.2} & {\footnotesize ±10} & {\footnotesize ±8.8} & {\footnotesize ±8.2} \\
+    \hline
+  \end{tabular}
+  \caption{Performance comparison of different metrics across various authorial combinations. For each metric, the top value represents the mean and the bottom value represents the standard deviation.}
+  \label{tab:author-consistency}
+\end{table*}
+
+\section{Preparing an Anonymous Submission}
+
+This document details the formatting requirements for anonymous submissions. The requirements are the same as for camera ready papers but with a few notable differences:
+
+\begin{itemize}
+    \item Anonymous submissions must not include the author names and affiliations. Write ``Anonymous Submission'' as the ``sole author'' and leave the affiliations empty.
+    \item The PDF document's metadata should be cleared with a metadata-cleaning tool before submitting it. This is to prevent leaked information from revealing your identity.
+    \item References must be anonymized whenever the reader can infer that they are to the authors' previous work.
+    \item AAAI's copyright notice should not be included as a footer in the first page.
+    \item Only the PDF version is required at this stage. No source versions will be requested, nor any copyright transfer form.
+\end{itemize}
+
+You can remove the copyright notice and ensure that your names aren't shown by including \texttt{submission} option when loading the \texttt{aaai2026} package:
+
+\begin{quote}\begin{scriptsize}\begin{verbatim}
+\documentclass[letterpaper]{article}
+\usepackage[submission]{aaai2026}
+\end{verbatim}\end{scriptsize}\end{quote}
+
+The remainder of this document are the original camera-
+ready instructions. Any contradiction of the above points
+ought to be ignored while preparing anonymous submis-
+sions.
+
+\section{Camera-Ready Guidelines}
+
+Congratulations on having a paper selected for inclusion in an AAAI Press proceedings or technical report! This document details the requirements necessary to get your accepted paper published using PDF\LaTeX{}. If you are using Microsoft Word, instructions are provided in a different document. AAAI Press does not support any other formatting software.
+
+The instructions herein are provided as a general guide for experienced \LaTeX{} users. If you do not know how to use \LaTeX{}, please obtain assistance locally. AAAI cannot provide you with support and the accompanying style files are \textbf{not} guaranteed to work. If the results you obtain are not in accordance with the specifications you received, you must correct your source file to achieve the correct result.
+
+These instructions are generic. Consequently, they do not include specific dates, page charges, and so forth. Please consult your specific written conference instructions for details regarding your submission. Please review the entire document for specific instructions that might apply to your particular situation. All authors must comply with the following:
+
+\begin{itemize}
+\item You must use the 2026 AAAI Press \LaTeX{} style file and the aaai2026.bst bibliography style files, which are located in the 2026 AAAI Author Kit (aaai2026.sty, aaai2026.bst).
+\item You must complete, sign, and return by the deadline the AAAI copyright form (unless directed by AAAI Press to use the AAAI Distribution License instead).
+\item You must read and format your paper source and PDF according to the formatting instructions for authors.
+\item You must submit your electronic files and abstract using our electronic submission form \textbf{on time.}
+\item You must pay any required page or formatting charges to AAAI Press so that they are received by the deadline.
+\item You must check your paper before submitting it, ensuring that it compiles without error, and complies with the guidelines found in the AAAI Author Kit.
+\end{itemize}
+
+\section{Copyright}
+All papers submitted for publication by AAAI Press must be accompanied by a valid signed copyright form. They must also contain the AAAI copyright notice at the bottom of the first page of the paper. There are no exceptions to these requirements. If you fail to provide us with a signed copyright form or disable the copyright notice, we will be unable to publish your paper. There are \textbf{no exceptions} to this policy. You will find a PDF version of the AAAI copyright form in the AAAI AuthorKit. Please see the specific instructions for your conference for submission details.
+
+\section{Formatting Requirements in Brief}
+We need source and PDF files that can be used in a variety of ways and can be output on a variety of devices. The design and appearance of the paper is strictly governed by the aaai style file (aaai2026.sty).
+\textbf{You must not make any changes to the aaai style file, nor use any commands, packages, style files, or macros within your own paper that alter that design, including, but not limited to spacing, floats, margins, fonts, font size, and appearance.} AAAI imposes requirements on your source and PDF files that must be followed. Most of these requirements are based on our efforts to standardize conference manuscript properties and layout. All papers submitted to AAAI for publication will be recompiled for standardization purposes. Consequently, every paper submission must comply with the following requirements:
+
+\begin{itemize}
+\item Your .tex file must compile in PDF\LaTeX{} --- (you may not include .ps or .eps figure files.)
+\item All fonts must be embedded in the PDF file --- including your figures.
+\item Modifications to the style file, whether directly or via commands in your document may not ever be made, most especially when made in an effort to avoid extra page charges or make your paper fit in a specific number of pages.
+\item No type 3 fonts may be used (even in illustrations).
+\item You may not alter the spacing above and below captions, figures, headings, and subheadings.
+\item You may not alter the font sizes of text elements, footnotes, heading elements, captions, or title information (for references and mathematics, please see the limited exceptions provided herein).
+\item You may not alter the line spacing of text.
+\item Your title must follow Title Case capitalization rules (not sentence case).
+\item \LaTeX{} documents must use the Times or Nimbus font package (you may not use Computer Modern for the text of your paper).
+\item No \LaTeX{} 209 documents may be used or submitted.
+\item Your source must not require use of fonts for non-Roman alphabets within the text itself. If your paper includes symbols in other languages (such as, but not limited to, Arabic, Chinese, Hebrew, Japanese, Thai, Russian and other Cyrillic languages), you must restrict their use to bit-mapped figures. Fonts that require non-English language support (CID and Identity-H) must be converted to outlines or 300 dpi bitmap or removed from the document (even if they are in a graphics file embedded in the document).
+\item Two-column format in AAAI style is required for all papers.
+\item The paper size for final submission must be US letter without exception.
+\item The source file must exactly match the PDF.
+\item The document margins may not be exceeded (no overfull boxes).
+\item The number of pages and the file size must be as specified for your event.
+\item No document may be password protected.
+\item Neither the PDFs nor the source may contain any embedded links or bookmarks (no hyperref or navigator packages).
+\item Your source and PDF must not have any page numbers, footers, or headers (no pagestyle commands).
+\item Your PDF must be compatible with Acrobat 5 or higher.
+\item Your \LaTeX{} source file (excluding references) must consist of a \textbf{single} file (use of the ``input" command is not allowed.
+\item Your graphics must be sized appropriately outside of \LaTeX{} (do not use the ``clip" or ``trim'' command) .
+\end{itemize}
+
+If you do not follow these requirements, your paper will be returned to you to correct the deficiencies.
+
+\section{What Files to Submit}
+You must submit the following items to ensure that your paper is published:
+\begin{itemize}
+\item A fully-compliant PDF file.
+\item Your \LaTeX{} source file submitted as a \textbf{single} .tex file (do not use the ``input" command to include sections of your paper --- every section must be in the single source file). (The only allowable exception is .bib file, which should be included separately).
+\item The bibliography (.bib) file(s).
+\item Your source must compile on our system, which includes only standard \LaTeX{} 2020 TeXLive support files.
+\item Only the graphics files used in compiling paper.
+\item The \LaTeX{}-generated files (e.g. .aux,  .bbl file, PDF, etc.).
+\end{itemize}
+
+Your \LaTeX{} source will be reviewed and recompiled on our system (if it does not compile, your paper will be returned to you. \textbf{Do not submit your source in multiple text files.} Your single \LaTeX{} source file must include all your text, your bibliography (formatted using aaai2026.bst), and any custom macros.
+
+Your files should work without any supporting files (other than the program itself) on any computer with a standard \LaTeX{} distribution.
+
+\textbf{Do not send files that are not actually used in the paper.} Avoid including any files not needed for compiling your paper, including, for example, this instructions file, unused graphics files, style files, additional material sent for the purpose of the paper review, intermediate build files and so forth.
+
+\textbf{Obsolete style files.} The commands for some common packages (such as some used for algorithms), may have changed. Please be certain that you are not compiling your paper using old or obsolete style files.
+
+\textbf{Final Archive.} Place your source files in a single archive which should be compressed using .zip. The final file size may not exceed 10 MB.
+Name your source file with the last (family) name of the first author, even if that is not you.
+
+
+\section{Using \LaTeX{} to Format Your Paper}
+
+The latest version of the AAAI style file is available on AAAI's website. Download this file and place it in the \TeX\ search path. Placing it in the same directory as the paper should also work. You must download the latest version of the complete AAAI Author Kit so that you will have the latest instruction set and style file.
+
+\subsection{Document Preamble}
+
+In the \LaTeX{} source for your paper, you \textbf{must} place the following lines as shown in the example in this subsection. This command set-up is for three authors. Add or subtract author and address lines as necessary, and uncomment the portions that apply to you. In most instances, this is all you need to do to format your paper in the Times font. The helvet package will cause Helvetica to be used for sans serif. These files are part of the PSNFSS2e package, which is freely available from many Internet sites (and is often part of a standard installation).
+
+Leave the setcounter for section number depth commented out and set at 0 unless you want to add section numbers to your paper. If you do add section numbers, you must uncomment this line and change the number to 1 (for section numbers), or 2 (for section and subsection numbers). The style file will not work properly with numbering of subsubsections, so do not use a number higher than 2.
+
+\subsubsection{The Following Must Appear in Your Preamble}
+\begin{quote}
+\begin{scriptsize}\begin{verbatim}
+\documentclass[letterpaper]{article}
+% DO NOT CHANGE THIS
+\usepackage[submission]{aaai2026} % DO NOT CHANGE THIS
+\usepackage{times} % DO NOT CHANGE THIS
+\usepackage{helvet} % DO NOT CHANGE THIS
+\usepackage{courier} % DO NOT CHANGE THIS
+\usepackage[hyphens]{url} % DO NOT CHANGE THIS
+\usepackage{graphicx} % DO NOT CHANGE THIS
+\urlstyle{rm} % DO NOT CHANGE THIS
+\def\UrlFont{\rm} % DO NOT CHANGE THIS
+\usepackage{graphicx}  % DO NOT CHANGE THIS
+\usepackage{natbib}  % DO NOT CHANGE THIS
+\usepackage{caption}  % DO NOT CHANGE THIS
+\frenchspacing % DO NOT CHANGE THIS
+\setlength{\pdfpagewidth}{8.5in} % DO NOT CHANGE THIS
+\setlength{\pdfpageheight}{11in} % DO NOT CHANGE THIS
+%
+% Keep the \pdfinfo as shown here. There's no need
+% for you to add the /Title and /Author tags.
+\pdfinfo{
+/TemplateVersion (2026.1)
+}
+\end{verbatim}\end{scriptsize}
+\end{quote}
+
+\subsection{Preparing Your Paper}
+
+After the preamble above, you should prepare your paper as follows:
+\begin{quote}
+\begin{scriptsize}\begin{verbatim}
+\begin{document}
+\maketitle
+\begin{abstract}
+%...
+\end{abstract}\end{verbatim}\end{scriptsize}
+\end{quote}
+
+\noindent If you want to add links to the paper's code, dataset(s), and extended version or similar this is the place to add them, within a \emph{links} environment:
+\begin{quote}%
+\begin{scriptsize}\begin{verbatim}
+\begin{links}
+  \link{Code}{https://aaai.org/example/guidelines}
+  \link{Datasets}{https://aaai.org/example/datasets}
+  \link{Extended version}{https://aaai.org/example}
+\end{links}\end{verbatim}\end{scriptsize}
+\end{quote}
+\noindent Make sure that you do not de-anonymize yourself with these links.
+
+\noindent You should then continue with the body of your paper. Your paper must conclude with the references, which should be inserted as follows:
+\begin{quote}
+\begin{scriptsize}\begin{verbatim}
+% References and End of Paper
+% These lines must be placed at the end of your paper
+\bibliography{Bibliography-File}
+\end{document}
+\end{verbatim}\end{scriptsize}
+\end{quote}
+
+\begin{quote}
+\begin{scriptsize}\begin{verbatim}
+\begin{document}\\
+\maketitle\\
+...\\
+\bibliography{Bibliography-File}\\
+\end{document}\\
+\end{verbatim}\end{scriptsize}
+\end{quote}
+
+\subsection{Commands and Packages That May Not Be Used}
+\begin{table*}[t]
+\centering
+
+\begin{tabular}{l|l|l|l}
+\textbackslash abovecaption &
+\textbackslash abovedisplay &
+\textbackslash addevensidemargin &
+\textbackslash addsidemargin \\
+\textbackslash addtolength &
+\textbackslash baselinestretch &
+\textbackslash belowcaption &
+\textbackslash belowdisplay \\
+\textbackslash break &
+\textbackslash clearpage &
+\textbackslash clip &
+\textbackslash columnsep \\
+\textbackslash float &
+\textbackslash input &
+\textbackslash input &
+\textbackslash linespread \\
+\textbackslash newpage &
+\textbackslash pagebreak &
+\textbackslash renewcommand &
+\textbackslash setlength \\
+\textbackslash text height &
+\textbackslash tiny &
+\textbackslash top margin &
+\textbackslash trim \\
+\textbackslash vskip\{- &
+\textbackslash vspace\{- \\
+\end{tabular}
+%}
+\caption{Commands that must not be used}
+\label{table1}
+\end{table*}
+
+\begin{table}[t]
+\centering
+%\resizebox{.95\columnwidth}{!}{
+\begin{tabular}{l|l|l|l}
+    authblk & babel & cjk & dvips \\
+    epsf & epsfig & euler & float \\
+    fullpage & geometry & graphics & hyperref \\
+    layout & linespread & lmodern & maltepaper \\
+    navigator & pdfcomment & pgfplots & psfig \\
+    pstricks & t1enc & titlesec & tocbind \\
+    ulem
+\end{tabular}
+\caption{LaTeX style packages that must not be used.}
+\label{table2}
+\end{table}
+
+There are a number of packages, commands, scripts, and macros that are incompatable with aaai2026.sty. The common ones are listed in tables \ref{table1} and \ref{table2}. Generally, if a command, package, script, or macro alters floats, margins, fonts, sizing, linespacing, or the presentation of the references and citations, it is unacceptable. Note that negative vskip and vspace may not be used except in certain rare occurances, and may never be used around tables, figures, captions, sections, subsections, subsubsections, or references.
+
+
+\subsection{Page Breaks}
+For your final camera ready copy, you must not use any page break commands. References must flow directly after the text without breaks. Note that some conferences require references to be on a separate page during the review process. AAAI Press, however, does not require this condition for the final paper.
+
+
+\subsection{Paper Size, Margins, and Column Width}
+Papers must be formatted to print in two-column format on 8.5 x 11 inch US letter-sized paper. The margins must be exactly as follows:
+\begin{itemize}
+\item Top margin: 1.25 inches (first page), .75 inches (others)
+\item Left margin: .75 inches
+\item Right margin: .75 inches
+\item Bottom margin: 1.25 inches
+\end{itemize}
+
+
+The default paper size in most installations of \LaTeX{} is A4. However, because we require that your electronic paper be formatted in US letter size, the preamble we have provided includes commands that alter the default to US letter size. Please note that using any other package to alter page size (such as, but not limited to the Geometry package) will result in your final paper being returned to you for correction.
+
+
+\subsubsection{Column Width and Margins.}
+To ensure maximum readability, your paper must include two columns. Each column should be 3.3 inches wide (slightly more than 3.25 inches), with a .375 inch (.952 cm) gutter of white space between the two columns. The aaai2026.sty file will automatically create these columns for you.
+
+\subsection{Overlength Papers}
+If your paper is too long and you resort to formatting tricks to make it fit, it is quite likely that it will be returned to you. The best way to retain readability if the paper is overlength is to cut text, figures, or tables. There are a few acceptable ways to reduce paper size that don't affect readability. First, turn on \textbackslash frenchspacing, which will reduce the space after periods. Next, move all your figures and tables to the top of the page. Consider removing less important portions of a figure. If you use \textbackslash centering instead of \textbackslash begin\{center\} in your figure environment, you can also buy some space. For mathematical environments, you may reduce fontsize {\bf but not below 6.5 point}.
+
+
+Commands that alter page layout are forbidden. These include \textbackslash columnsep,  \textbackslash float, \textbackslash topmargin, \textbackslash topskip, \textbackslash textheight, \textbackslash textwidth, \textbackslash oddsidemargin, and \textbackslash evensizemargin (this list is not exhaustive). If you alter page layout, you will be required to pay the page fee. Other commands that are questionable and may cause your paper to be rejected include \textbackslash parindent, and \textbackslash parskip. Commands that alter the space between sections are forbidden. The title sec package is not allowed. Regardless of the above, if your paper is obviously ``squeezed" it is not going to to be accepted. Options for reducing the length of a paper include reducing the size of your graphics, cutting text, or paying the extra page charge (if it is offered).
+
+
+\subsection{Type Font and Size}
+Your paper must be formatted in Times Roman or Nimbus. We will not accept papers formatted using Computer Modern or Palatino or some other font as the text or heading typeface. Sans serif, when used, should be Courier. Use Symbol or Lucida or Computer Modern for \textit{mathematics only. }
+
+Do not use type 3 fonts for any portion of your paper, including graphics. Type 3 bitmapped fonts are designed for fixed resolution printers. Most print at 300 dpi even if the printer resolution is 1200 dpi or higher. They also often cause high resolution imagesetter devices to crash. Consequently, AAAI will not accept electronic files containing obsolete type 3 fonts. Files containing those fonts (even in graphics) will be rejected. (Authors using blackboard symbols must avoid packages that use type 3 fonts.)
+
+Fortunately, there are effective workarounds that will prevent your file from embedding type 3 bitmapped fonts. The easiest workaround is to use the required times, helvet, and courier packages with \LaTeX{}2e. (Note that papers formatted in this way will still use Computer Modern for the mathematics. To make the math look good, you'll either have to use Symbol or Lucida, or you will need to install type 1 Computer Modern fonts --- for more on these fonts, see the section ``Obtaining Type 1 Computer Modern.")
+
+If you are unsure if your paper contains type 3 fonts, view the PDF in Acrobat Reader. The Properties/Fonts window will display the font name, font type, and encoding properties of all the fonts in the document. If you are unsure if your graphics contain type 3 fonts (and they are PostScript or encapsulated PostScript documents), create PDF versions of them, and consult the properties window in Acrobat Reader.
+
+The default size for your type must be ten-point with twelve-point leading (line spacing). Start all pages (except the first) directly under the top margin. (See the next section for instructions on formatting the title page.) Indent ten points when beginning a new paragraph, unless the paragraph begins directly below a heading or subheading.
+
+
+\subsubsection{Obtaining Type 1 Computer Modern for \LaTeX{}.}
+
+If you use Computer Modern for the mathematics in your paper (you cannot use it for the text) you may need to download type 1 Computer fonts. They are available without charge from the American Mathematical Society:
+http://www.ams.org/tex/type1-fonts.html.
+
+\subsubsection{Nonroman Fonts.}
+If your paper includes symbols in other languages (such as, but not limited to, Arabic, Chinese, Hebrew, Japanese, Thai, Russian and other Cyrillic languages), you must restrict their use to bit-mapped figures.
+
+\subsection{Title and Authors}
+Your title must appear centered over both text columns in sixteen-point bold type (twenty-four point leading). The title must be written in Title Case according to the Chicago Manual of Style rules. The rules are a bit involved, but in general verbs (including short verbs like be, is, using, and go), nouns, adverbs, adjectives, and pronouns should be capitalized, (including both words in hyphenated terms), while articles, conjunctions, and prepositions are lower case unless they directly follow a colon or long dash. You can use the online tool \url{https://titlecaseconverter.com/} to double-check the proper capitalization (select the "Chicago" style and mark the "Show explanations" checkbox).
+
+Author's names should appear below the title of the paper, centered in twelve-point type (with fifteen point leading), along with affiliation(s) and complete address(es) (including electronic mail address if available) in nine-point roman type (the twelve point leading). You should begin the two-column format when you come to the abstract.
+
+\subsubsection{Formatting Author Information.}
+Author information has to be set according to the following specification depending if you have one or more than one affiliation. You may not use a table nor may you employ the \textbackslash authorblk.sty package. For one or several authors from the same institution, please separate them with commas and write all affiliation directly below (one affiliation per line) using the macros \textbackslash author and \textbackslash affiliations:
+
+\begin{quote}\begin{scriptsize}\begin{verbatim}
+\author{
+    Author 1, ..., Author n\\
+}
+\affiliations {
+    Address line\\
+    ... \\
+    Address line\\
+}
+\end{verbatim}\end{scriptsize}\end{quote}
+
+
+\noindent For authors from different institutions, use \textbackslash textsuperscript \{\textbackslash rm x \} to match authors and affiliations. Notice that there should not be any spaces between the author name (or comma following it) and the superscript.
+
+\begin{quote}\begin{scriptsize}\begin{verbatim}
+\author{
+    AuthorOne\equalcontrib\textsuperscript{\rm 1,\rm 2},
+    AuthorTwo\equalcontrib\textsuperscript{\rm 2},
+    AuthorThree\textsuperscript{\rm 3},\\
+    AuthorFour\textsuperscript{\rm 4},
+    AuthorFive \textsuperscript{\rm 5}}
+}
+\affiliations {
+    \textsuperscript{\rm 1}AffiliationOne,\\
+    \textsuperscript{\rm 2}AffiliationTwo,\\
+    \textsuperscript{\rm 3}AffiliationThree,\\
+    \textsuperscript{\rm 4}AffiliationFour,\\
+    \textsuperscript{\rm 5}AffiliationFive\\
+    \{email, email\}@affiliation.com,
+    email@affiliation.com,
+    email@affiliation.com,
+    email@affiliation.com
+}
+\end{verbatim}\end{scriptsize}\end{quote}
+
+You can indicate that some authors contributed equally using the \textbackslash equalcontrib command. This will add a marker after the author names and a footnote on the first page.
+
+Note that you may want to  break the author list for better visualization. You can achieve this using a simple line break (\textbackslash  \textbackslash).
+
+\subsection{\LaTeX{} Copyright Notice}
+The copyright notice automatically appears if you use aaai2026.sty. It has been hardcoded and may not be disabled.
+
+\subsection{Credits}
+Any credits to a sponsoring agency should appear in the acknowledgments section, unless the agency requires different placement. If it is necessary to include this information on the front page, use
+\textbackslash thanks in either the \textbackslash author or \textbackslash title commands.
+For example:
+\begin{quote}
+\begin{small}
+\textbackslash title\{Very Important Results in AI\textbackslash thanks\{This work is
+ supported by everybody.\}\}
+\end{small}
+\end{quote}
+Multiple \textbackslash thanks commands can be given. Each will result in a separate footnote indication in the author or title with the corresponding text at the botton of the first column of the document. Note that the \textbackslash thanks command is fragile. You will need to use \textbackslash protect.
+
+Please do not include \textbackslash pubnote commands in your document.
+
+\subsection{Abstract}
+Follow the example commands in this document for creation of your abstract. The command \textbackslash begin\{abstract\} will automatically indent the text block. Please do not indent it further. {Do not include references in your abstract!}
+
+\subsection{Page Numbers}
+
+Do not print any page numbers on your paper. The use of \textbackslash pagestyle is forbidden.
+
+\subsection{Text}
+The main body of the paper must be formatted in black, ten-point Times Roman with twelve-point leading (line spacing). You may not reduce font size or the linespacing. Commands that alter font size or line spacing (including, but not limited to baselinestretch, baselineshift, linespread, and others) are expressly forbidden. In addition, you may not use color in the text.
+
+\subsection{Citations}
+Citations within the text should include the author's last name and year, for example (Newell 1980). Append lower-case letters to the year in cases of ambiguity. Multiple authors should be treated as follows: (Feigenbaum and Engelmore 1988) or (Ford, Hayes, and Glymour 1992). In the case of four or more authors, list only the first author, followed by et al. (Ford et al. 1997).
+
+\subsection{Extracts}
+Long quotations and extracts should be indented ten points from the left and right margins.
+
+\begin{quote}
+This is an example of an extract or quotation. Note the indent on both sides. Quotation marks are not necessary if you offset the text in a block like this, and properly identify and cite the quotation in the text.
+
+\end{quote}
+
+\subsection{Footnotes}
+Use footnotes judiciously, taking into account that they interrupt the reading of the text. When required, they should be consecutively numbered throughout with superscript Arabic numbers. Footnotes should appear at the bottom of the page, separated from the text by a blank line space and a thin, half-point rule.
+
+\subsection{Headings and Sections}
+When necessary, headings should be used to separate major sections of your paper. Remember, you are writing a short paper, not a lengthy book! An overabundance of headings will tend to make your paper look more like an outline than a paper. The aaai2026.sty package will create headings for you. Do not alter their size nor their spacing above or below.
+
+\subsubsection{Section Numbers.}
+The use of section numbers in AAAI Press papers is optional. To use section numbers in \LaTeX{}, uncomment the setcounter line in your document preamble and change the 0 to a 1. Section numbers should not be used in short poster papers and/or extended abstracts.
+
+\subsubsection{Section Headings.}
+Sections should be arranged and headed as follows:
+\begin{enumerate}
+\item Main content sections
+\item Appendices (optional)
+\item Ethical Statement (optional, unnumbered)
+\item Acknowledgements (optional, unnumbered)
+\item References (unnumbered)
+\end{enumerate}
+
+\subsubsection{Appendices.}
+Any appendices must appear after the main content. If your main sections are numbered, appendix sections must use letters instead of arabic numerals. In \LaTeX{} you can use the \texttt{\textbackslash appendix} command to achieve this effect and then use \texttt{\textbackslash section\{Heading\}} normally for your appendix sections.
+
+\subsubsection{Ethical Statement.}
+You can write a statement about the potential ethical impact of your work, including its broad societal implications, both positive and negative. If included, such statement must be written in an unnumbered section titled \emph{Ethical Statement}.
+
+\subsubsection{Acknowledgments.}
+The acknowledgments section, if included, appears right before the references and is headed ``Acknowledgments". It must not be numbered even if other sections are (use \texttt{\textbackslash section*\{Acknowledgements\}} in \LaTeX{}). This section includes acknowledgments of help from associates and colleagues, credits to sponsoring agencies, financial support, and permission to publish. Please acknowledge other contributors, grant support, and so forth, in this section. Do not put acknowledgments in a footnote on the first page. If your grant agency requires acknowledgment of the grant on page 1, limit the footnote to the required statement, and put the remaining acknowledgments at the back. Please try to limit acknowledgments to no more than three sentences.
+
+\subsubsection{References.}
+The references section should be labeled ``References" and must appear at the very end of the paper (don't end the paper with references, and then put a figure by itself on the last page). A sample list of references is given later on in these instructions. Please use a consistent format for references. Poorly prepared or sloppy references reflect badly on the quality of your paper and your research. Please prepare complete and accurate citations.
+
+\subsection{Illustrations and  Figures}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.9\columnwidth]{figure1} % Reduce the figure size so that it is slightly narrower than the column. Don't use precise values for figure width.This setup will avoid overfull boxes.
+\caption{Using the trim and clip commands produces fragile layers that can result in disasters (like this one from an actual paper) when the color space is corrected or the PDF combined with others for the final proceedings. Crop your figures properly in a graphics program -- not in LaTeX.}
+\label{fig1}
+\end{figure}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.8\textwidth]{figure2} % Reduce the figure size so that it is slightly narrower than the column.
+\caption{Adjusting the bounding box instead of actually removing the unwanted data resulted multiple layers in this paper. It also needlessly increased the PDF size. In this case, the size of the unwanted layer doubled the paper's size, and produced the following surprising results in final production. Crop your figures properly in a graphics program. Don't just alter the bounding box.}
+\label{fig2}
+\end{figure*}
+
+% Using the \centering command instead of \begin{center} ... \end{center} will save space
+% Positioning your figure at the top of the page will save space and make the paper more readable
+% Using 0.95\columnwidth in conjunction with the
+
+
+Your paper must compile in PDF\LaTeX{}. Consequently, all your figures must be .jpg, .png, or .pdf. You may not use the .gif (the resolution is too low), .ps, or .eps file format for your figures.
+
+Figures, drawings, tables, and photographs should be placed throughout the paper on the page (or the subsequent page) where they are first discussed. Do not group them together at the end of the paper. If placed at the top of the paper, illustrations may run across both columns. Figures must not invade the top, bottom, or side margin areas. Figures must be inserted using the \textbackslash usepackage\{graphicx\}. Number figures sequentially, for example, figure 1, and so on. Do not use minipage to group figures.
+
+If you normally create your figures using pgfplots, please create the figures first, and then import them as pdfs with proper bounding boxes, as the bounding and trim boxes created by pfgplots are fragile and not valid.
+
+When you include your figures, you must crop them \textbf{outside} of \LaTeX{}. The command \textbackslash includegraphics*[clip=true, viewport 0 0 10 10]{...} might result in a PDF that looks great, but the image is \textbf{not really cropped.} The full image can reappear (and obscure whatever it is overlapping) when page numbers are applied or color space is standardized. Figures \ref{fig1}, and \ref{fig2} display some unwanted results that often occur.
+
+If your paper includes illustrations that are not compatible with PDF\TeX{} (such as .eps or .ps documents), you will need to convert them. The epstopdf package will usually work for eps files. You will need to convert your ps files to PDF in either case.
+
+\subsubsection {Figure Captions.}The illustration number and caption must appear \textit{under} the illustration. Labels and other text with the actual illustration must be at least nine-point type. However, the font and size of figure captions must be 10 point roman. Do not make them smaller, bold, or italic. (Individual words may be italicized if the context requires differentiation.)
+
+\subsection{Tables}
+
+\subsection{Tables}
+
+Tables should be presented in 10 point roman type. If necessary, they may be altered to 9 point type. You must not use \texttt{\textbackslash resizebox} or other commands that resize the entire table to make it smaller, because you can't control the final font size this way.
+If your table is too large you can use \texttt{\textbackslash setlength\{\textbackslash tabcolsep\}\{1mm\}} to compress the columns a bit or you can adapt the content (e.g.: reduce the decimal precision when presenting numbers, use shortened column titles, make some column duble-line to get it narrower).
+
+Tables that do not fit in a single column must be placed across double columns. If your table won't fit within the margins even when spanning both columns and using the above techniques, you must split it in two separate tables.
+
+\subsubsection {Table Captions.} The number and caption for your table must appear \textit{under} (not above) the table.  Additionally, the font and size of table captions must be 10 point roman and must be placed beneath the figure. Do not make them smaller, bold, or italic. (Individual words may be italicized if the context requires differentiation.)
+
+
+
+\subsubsection{Low-Resolution Bitmaps.}
+You may not use low-resolution (such as 72 dpi) screen-dumps and GIF files---these files contain so few pixels that they are always blurry, and illegible when printed. If they are color, they will become an indecipherable mess when converted to black and white. This is always the case with gif files, which should never be used. The resolution of screen dumps can be increased by reducing the print size of the original file while retaining the same number of pixels. You can also enlarge files by manipulating them in software such as PhotoShop. Your figures should be 300 dpi when incorporated into your document.
+
+\subsubsection{\LaTeX{} Overflow.}
+\LaTeX{} users please beware: \LaTeX{} will sometimes put portions of the figure or table or an equation in the margin. If this happens, you need to make the figure or table span both columns. If absolutely necessary, you may reduce the figure, or reformat the equation, or reconfigure the table.{ \bf Check your log file!} You must fix any overflow into the margin (that means no overfull boxes in \LaTeX{}). \textbf{Nothing is permitted to intrude into the margin or gutter.}
+
+
+\subsubsection{Using Color.}
+Use of color is restricted to figures only. It must be WACG 2.0 compliant. (That is, the contrast ratio must be greater than 4.5:1 no matter the font size.) It must be CMYK, NOT RGB. It may never be used for any portion of the text of your paper. The archival version of your paper will be printed in black and white and grayscale. The web version must be readable by persons with disabilities. Consequently, because conversion to grayscale can cause undesirable effects (red changes to black, yellow can disappear, and so forth), we strongly suggest you avoid placing color figures in your document. If you do include color figures, you must (1) use the CMYK (not RGB) colorspace and (2) be mindful of readers who may happen to have trouble distinguishing colors. Your paper must be decipherable without using color for distinction.
+
+\subsubsection{Drawings.}
+We suggest you use computer drawing software (such as Adobe Illustrator or, (if unavoidable), the drawing tools in Microsoft Word) to create your illustrations. Do not use Microsoft Publisher. These illustrations will look best if all line widths are uniform (half- to two-point in size), and you do not create labels over shaded areas. Shading should be 133 lines per inch if possible. Use Times Roman or Helvetica for all figure call-outs. \textbf{Do not use hairline width lines} --- be sure that the stroke width of all lines is at least .5 pt. Zero point lines will print on a laser printer, but will completely disappear on the high-resolution devices used by our printers.
+
+\subsubsection{Photographs and Images.}
+Photographs and other images should be in grayscale (color photographs will not reproduce well; for example, red tones will reproduce as black, yellow may turn to white, and so forth) and set to a minimum of 300 dpi. Do not prescreen images.
+
+\subsubsection{Resizing Graphics.}
+Resize your graphics \textbf{before} you include them with LaTeX. You may \textbf{not} use trim or clip options as part of your \textbackslash includegraphics command. Resize the media box of your PDF using a graphics program instead.
+
+\subsubsection{Fonts in Your Illustrations.}
+You must embed all fonts in your graphics before including them in your LaTeX document.
+
+\subsubsection{Algorithms.}
+Algorithms and/or programs are a special kind of figures. Like all illustrations, they should appear floated to the top (preferably) or bottom of the page. However, their caption should appear in the header, left-justified and enclosed between horizontal lines, as shown in Algorithm~\ref{alg:algorithm}. The algorithm body should be terminated with another horizontal line. It is up to the authors to decide whether to show line numbers or not, how to format comments, etc.
+
+In \LaTeX{} algorithms may be typeset using the {\tt algorithm} and {\tt algorithmic} packages, but you can also use one of the many other packages for the task.
+
+\begin{algorithm}[tb]
+\caption{Example algorithm}
+\label{alg:algorithm}
+\textbf{Input}: Your algorithm's input\\
+\textbf{Parameter}: Optional list of parameters\\
+\textbf{Output}: Your algorithm's output
+\begin{algorithmic}[1] %[1] enables line numbers
+\STATE Let $t=0$.
+\WHILE{condition}
+\STATE Do some action.
+\IF {conditional}
+\STATE Perform task A.
+\ELSE
+\STATE Perform task B.
+\ENDIF
+\ENDWHILE
+\STATE \textbf{return} solution
+\end{algorithmic}
+\end{algorithm}
+
+\subsubsection{Listings.}
+Listings are much like algorithms and programs. They should also appear floated to the top (preferably) or bottom of the page. Listing captions should appear in the header, left-justified and enclosed between horizontal lines as shown in Listing~\ref{lst:listing}. Terminate the body with another horizontal line and avoid any background color. Line numbers, if included, must appear within the text column.
+
+\begin{listing}[tb]%
+\caption{Example listing {\tt quicksort.hs}}%
+\label{lst:listing}%
+\begin{lstlisting}[language=Haskell]
+quicksort :: Ord a => [a] -> [a]
+quicksort []     = []
+quicksort (p:xs) = (quicksort lesser) ++ [p] ++ (quicksort greater)
+	where
+		lesser  = filter (< p) xs
+		greater = filter (>= p) xs
+\end{lstlisting}
+\end{listing}
+
+\subsection{References}
+The AAAI style includes a set of definitions for use in formatting references with BibTeX. These definitions make the bibliography style fairly close to the ones  specified in the Reference Examples appendix below. To use these definitions, you also need the BibTeX style file ``aaai2026.bst," available in the AAAI Author Kit on the AAAI web site. Then, at the end of your paper but before \textbackslash end{document}, you need to put the following lines:
+
+\begin{quote}
+\begin{small}
+\textbackslash bibliography\{bibfile1,bibfile2,...\}
+\end{small}
+\end{quote}
+
+Please note that the aaai2026.sty class already sets the bibliographystyle for you, so you do not have to place any \textbackslash bibliographystyle command in the document yourselves. The aaai2026.sty file is incompatible with the hyperref and navigator packages. If you use either, your references will be garbled and your paper will be returned to you.
+
+References may be the same size as surrounding text.
+However, in this section (only), you may reduce the size to {\em \textbackslash small} (9pt) if your paper exceeds the allowable number of pages. Making it any smaller than 9 point with 10 point linespacing, however, is not allowed.
+
+The list of files in the \textbackslash bibliography command should be the names of your BibTeX source files (that is, the .bib files referenced in your paper).
+
+The following commands are available for your use in citing references:
+\begin{quote}
+{\em \textbackslash cite:} Cites the given reference(s) with a full citation. This appears as ``(Author Year)'' for one reference, or ``(Author Year; Author Year)'' for multiple references.\smallskip\\
+{\em \textbackslash shortcite:} Cites the given reference(s) with just the year. This appears as ``(Year)'' for one reference, or ``(Year; Year)'' for multiple references.\smallskip\\
+{\em \textbackslash citeauthor:} Cites the given reference(s) with just the author name(s) and no parentheses.\smallskip\\
+{\em \textbackslash citeyear:} Cites the given reference(s) with just the date(s) and no parentheses.
+\end{quote}
+You may also use any of the \emph{natbib} citation commands.
+
+
+\section{Proofreading Your PDF}
+Please check all the pages of your PDF file. The most commonly forgotten element is the acknowledgements --- especially the correct grant number. Authors also commonly forget to add the metadata to the source, use the wrong reference style file, or don't follow the capitalization rules or comma placement for their author-title information properly. A final common problem is text (expecially equations) that runs into the margin. You will need to fix these common errors before submitting your file.
+
+\section{Improperly Formatted Files }
+In the past, AAAI has corrected improperly formatted files submitted by the authors. Unfortunately, this has become an increasingly burdensome expense that we can no longer absorb). Consequently, if your file is improperly formatted, it will be returned to you for correction.
+
+\section{Naming Your Electronic File}
+We require that you name your \LaTeX{} source file with the last name (family name) of the first author so that it can easily be differentiated from other submissions. Complete file-naming instructions will be provided to you in the submission instructions.
+
+\section{Submitting Your Electronic Files to AAAI}
+Instructions on paper submittal will be provided to you in your acceptance letter.
+
+\section{Inquiries}
+If you have any questions about the preparation or submission of your paper as instructed in this document, please contact AAAI Press at the address given below. If you have technical questions about implementation of the aaai style file, please contact an expert at your site. We do not provide technical support for \LaTeX{} or any other software package. To avoid problems, please keep your paper simple, and do not incorporate complicated macros and style files.
+
+\begin{quote}
+\noindent AAAI Press\\
+1101 Pennsylvania Ave, NW Suite 300\\
+Washington, DC 20004 USA\\
+\textit{Telephone:} 1-202-360-4062\\
+\textit{E-mail:} See the submission instructions for your particular conference or event.
+\end{quote}
+
+\section{Additional Resources}
+\LaTeX{} is a difficult program to master. If you've used that software, and this document didn't help or some items were not explained clearly, we recommend you read Michael Shell's excellent document (testflow doc.txt V1.0a 2002/08/13) about obtaining correct PS/PDF output on \LaTeX{} systems. (It was written for another purpose, but it has general application as well). It is available at www.ctan.org in the tex-archive.
+
+\appendix
+\section{Reference Examples}
+\label{sec:reference_examples}
+
+\nobibliography*
+Formatted bibliographies should look like the following examples. You should use BibTeX to generate the references. Missing fields are unacceptable when compiling references, and usually indicate that you are using the wrong type of entry (BibTeX class).
+
+\paragraph{Book with multiple authors~\nocite{em:86}} Use the \texttt{@book} class.\\[.2em]
+\bibentry{em:86}.
+
+\paragraph{Journal and magazine articles~\nocite{r:80, hcr:83}} Use the \texttt{@article} class.\\[.2em]
+\bibentry{r:80}.\\[.2em]
+\bibentry{hcr:83}.
+
+\paragraph{Proceedings paper published by a society, press or publisher~\nocite{c:83, c:84}} Use the \texttt{@inproceedings} class. You may abbreviate the \emph{booktitle} field, but make sure that the conference edition is clear.\\[.2em]
+\bibentry{c:84}.\\[.2em]
+\bibentry{c:83}.
+
+\paragraph{University technical report~\nocite{r:86}} Use the \texttt{@techreport} class.\\[.2em]
+\bibentry{r:86}.
+
+\paragraph{Dissertation or thesis~\nocite{c:79}} Use the \texttt{@phdthesis} class.\\[.2em]
+\bibentry{c:79}.
+
+\paragraph{Forthcoming publication~\nocite{c:21}} Use the \texttt{@misc} class with a \texttt{note="Forthcoming"} annotation.
+\begin{quote}
+\begin{footnotesize}
+\begin{verbatim}
+@misc(key,
+  [...]
+  note="Forthcoming",
+)
+\end{verbatim}
+\end{footnotesize}
+\end{quote}
+\bibentry{c:21}.
+
+\paragraph{ArXiv paper~\nocite{c:22}} Fetch the BibTeX entry from the "Export Bibtex Citation" link in the arXiv website. Notice it uses the \texttt{@misc} class instead of the \texttt{@article} one, and that it includes the \texttt{eprint} and \texttt{archivePrefix} keys.
+\begin{quote}
+\begin{footnotesize}
+\begin{verbatim}
+@misc(key,
+  [...]
+  eprint="xxxx.yyyy",
+  archivePrefix="arXiv",
+)
+\end{verbatim}
+\end{footnotesize}
+\end{quote}
+\bibentry{c:22}.
+
+\paragraph{Website or online resource~\nocite{c:23}} Use the \texttt{@misc} class. Add the url in the \texttt{howpublished} field and the date of access in the \texttt{note} field:
+\begin{quote}
+\begin{footnotesize}
+\begin{verbatim}
+@misc(key,
+  [...]
+  howpublished="\url{http://...}",
+  note="Accessed: YYYY-mm-dd",
+)
+\end{verbatim}
+\end{footnotesize}
+\end{quote}
+\bibentry{c:23}.
+
+\vspace{.2em}
+For the most up to date version of the AAAI reference style, please consult the \textit{AI Magazine} Author Guidelines at \url{https://aaai.org/ojs/index.php/aimagazine/about/submissions#authorGuidelines}
+
+\section{Acknowledgments}
+AAAI is especially grateful to Peter Patel Schneider for his work in implementing the original aaai.sty file, liberally using the ideas of other style hackers, including Barbara Beeton. We also acknowledge with thanks the work of George Ferguson for his guide to using the style and BibTeX files --- which has been incorporated into this document --- and Hans Guesgen, who provided several timely modifications, as well as the many others who have, from time to time, sent in suggestions on improvements to the AAAI style. We are especially grateful to Francisco Cruz, Marc Pujol-Gonzalez, and Mico Loretan for the improvements to the Bib\TeX{} and \LaTeX{} files made in 2020.
+
+The preparation of the \LaTeX{} and Bib\TeX{} files that implement these instructions was supported by Schlumberger Palo Alto Research, AT\&T Bell Laboratories, Morgan Kaufmann Publishers, The Live Oak Press, LLC, and AAAI Press. Bibliography style changes were added by Sunil Issar. \verb+\+pubnote was added by J. Scott Penberthy. George Ferguson added support for printing the AAAI copyright slug. Additional changes to aaai2026.sty and aaai2026.bst have been made by Francisco Cruz and Marc Pujol-Gonzalez.
+
+\bigskip
+\noindent Thank you for reading these instructions carefully. We look forward to receiving your electronic files!
+
+\bibliography{aaai2026}
+
+\end{document}
