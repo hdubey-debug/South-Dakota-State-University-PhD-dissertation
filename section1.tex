@@ -70,87 +70,33 @@ Before establishing chunk correspondences for fine-grained assessment, VCS const
 \end{equation}
 which represents the cosine similarity between the $i$-th reference chunk and $j$-th generated chunk.
 
-However, before selecting the best match for each chunk, VCS defines Mapping Windows (MW) that constrain the search space within this similarity matrix. This concept stems from empirical observations: when computing pairwise chunk embeddings between identical long-form descriptions, the resulting similarity matrix exhibits a clear diagonal structure where $C_1^{ref}$ maps to $C_1^{gen}$, $C_2^{ref}$ maps to $C_2^{gen}$, and so on, with this diagonal pattern stretching or compressing proportionally in brevity or verbosity cases.
+However, before selecting the best match for each chunk, VCS defines Mapping Windows (MW) that constrain the search space within this similarity matrix. This concept stems from empirical observations: when computing pairwise chunk embeddings between identical long-form descriptions, the resulting similarity matrix exhibits a clear diagonal structure where $C_1^{ref}$ maps to $C_1^{gen}$, $C_2^{ref}$ maps to $C_2^{gen}$, and so on, with this diagonal pattern stretching or compressing proportionally in brevity or verbosity cases. Hence, for given chunk counts $N_{ref}$ and $N_{gen}$, we define this diagonal search space and call it Mapping Windows—regions where each chunk should ideally map.
 
-\paragraph{Mapping Window Construction}
-Let:
-\begin{align}
-N_{ref} &= |C_{ref}|, \quad N_{gen} = |C_{gen}| \\
-s &= \frac{\max(N_{ref}, N_{gen})}{\min(N_{ref}, N_{gen})} \\
-h_{mw} &= \lceil s \rceil
-\end{align}
-
-Assume $N_{ref} \geq N_{gen}$ (swap roles otherwise). For every generated index $j \in \{0, \ldots, N_{gen} - 1\}$:
-\begin{equation}
-MW_{prec}(j) = \left[\lfloor j \cdot s \rfloor, \min(\lfloor j \cdot s \rfloor + h_{mw}, N_{ref})\right)
-\end{equation}
-This defines a precision mapping window in the reference timeline that a well-aligned match for $j$ should inhabit.
-
-A dual recall window for each reference index $i$ is the smallest closed range of $j$-indices whose precision windows cover $i$:
-\begin{equation}
-MW_{rec}(i) = \left[\min\{j \mid i \in MW_{prec}(j)\}, \max\{j \mid i \in MW_{prec}(j)\} + 1\right)
-\end{equation}
-
-VCS assigns Precision Windows ($MW_{prec}$) and Recall Windows ($MW_{rec}$) based on sequence direction: when $N_{ref} \geq N_{gen}$, precision uses direct windows and recall uses reverse windows; otherwise, assignments are reversed.
+VCS identifies the longer sequence as $\max(N_{ref}, N_{gen})$ and the shorter sequence as $\min(N_{ref}, N_{gen})$. We compute slope $s = \text{longer}/\text{shorter}$ and base window height $h_{mw} = \lceil s \rceil$. The algorithm creates direct windows by mapping each position $i$ in the shorter sequence to a window of height $h_{mw}$ in the longer sequence, spanning range $[\lfloor i \cdot s \rfloor, \min(\lfloor i \cdot s \rfloor + h_{mw}, \text{longer}))$ with proportional scaling. Reverse windows invert this mapping: for each position in the longer sequence, we determine which positions in the shorter sequence include it. VCS assigns Precision Windows ($MW_p$) and Recall Windows ($MW_r$) based on sequence direction: when $N_{ref} \geq N_{gen}$, precision uses direct windows and recall uses reverse windows; otherwise, assignments are reversed.
 
 \subsubsection{Best Matching Algorithm}
-Having established Mapping Windows within the similarity matrix $\mathbf{S}$, VCS pairs each generated chunk with its best reference counterpart, and vice versa. Naively selecting the highest-similarity reference for each generated chunk leads to semantic collision and semantic ambiguity. VCS resolves these issues through a two-step Best-Matching Algorithm.
+Having established Mapping Windows within the similarity matrix $\mathbf{S}$, VCS pairs each generated chunk with its best reference counterpart, and vice versa. Naively selecting the highest-similarity reference for each generated chunk leads to semantic collision and semantic ambiguity. Semantic collision occurs when a single chunk exhibits identical similarity to multiple counterparts, while semantic ambiguity arises when a chunk achieves nearly equal similarity with multiple candidates. Both issues stem from repeated events or superficial lexical overlap, obscuring true narrative counterparts.
 
-Given the cosine-similarity matrix $\mathbf{S} \in [0,1]^{N_{ref} \times N_{gen}}$, a context-aware best match for each generated index $j$ is chosen as follows:
+VCS resolves these issues through a Best-Matching Algorithm that combines adaptive context filtering with mapping-window constraints. Adaptive context filtering first determines a candidate set around the maximum similarity rather than committing immediately to the top score. Two user-defined parameters control this process: the context cutoff $\tau_{ctx}$ (default 0.6) and the context window control $k_{ctx}$ (default 4). Similarities below the cutoff receive no context expansion, while those above it define a context window whose width is computed as
 
-\paragraph{Context Filtering}
-Let:
-\begin{align}
-m_j &= \max_i S_{i,j} \\
-\alpha &\in (0,1) \quad \text{(default 0.6)} \\
-\kappa &> 0 \quad \text{(default 5.0)}
-\end{align}
-
-Define:
-\begin{align}
-\text{context\_range} &= 1 - \alpha \\
-w_j &= \frac{\text{context\_range} - (1 - m_j)}{\kappa \cdot m_j} \quad \text{(clamped at 0)} \\
-\theta_j &= m_j - w_j
-\end{align}
-
-The candidate set is:
 \begin{equation}
-C_j = \{i \mid S_{i,j} \geq \theta_j\}
+w_{ctx} = \frac{(1-\tau_{ctx})-(1-s_{max})}{s_{max} \cdot k_{ctx}},
 \end{equation}
 
-\paragraph{Window-Constrained Selection}
-If $|C_j| = 1$ or no mapping window is supplied, pick the unique/maximal-similarity index. Otherwise, let $MW_{prec}(j) = [a_j, b_j)$. For every $i \in C_j$ define its distance to the window:
-\begin{equation}
-d_j(i) = \begin{cases}
-0, & i \in MW_{prec}(j) \\
-\min(|i - a_j|, |i - (b_j - 1)|), & \text{otherwise}
-\end{cases}
-\end{equation}
+where $s_{max}$ is the maximum similarity for the chunk. All candidates within $s_{max} - w_{ctx}$ enter the pool for selection. Mapping-window constraints then enforce temporal alignment: among the candidate matches, the algorithm chooses the chunk closest to the mapping-window boundary of the target chunk, breaking ties by similarity. When $s_{max}$ falls below the cutoff, no context expansion occurs, and ties are resolved purely by distance from the mapping-window boundary.
 
-Select:
-\begin{equation}
-i_j^* = \arg\max_{i \in C_j} (-d_j(i), S_{i,j})
-\end{equation}
-i.e., the candidate with minimum distance, breaking ties by larger similarity.
-
-The same routine is run row-wise on $\mathbf{S}$ with the recall windows $MW_{rec}(i)$ to produce the bidirectional match sets:
+This combination mitigates both collision and ambiguity. Executing this procedure for each generated chunk and each reference chunk yields:
 \begin{align}
-M_P &= \{(j, i_j^*)\} \quad \text{(precision best matches)} \\
-M_R &= \{(j_i^*, i)\} \quad \text{(recall best matches)}
+M_P &= \{(C_j^{gen}, C_{i^*}^{ref})\} \quad \text{(precision best matches)} \\
+M_R &= \{(C_i^{ref}, C_{j^*}^{gen})\} \quad \text{(recall best matches)}
 \end{align}
 
 \subsubsection{Local Alignment Score (LAS)}
-Having obtained the correspondence sets $M_P$ and $M_R$ from the Best-Matching Algorithm, VCS computes the LAS by averaging cosine similarities of matched chunk pairs. For each orientation we average the similarities of the accepted pairs:
-\begin{align}
-LAS_{prec} &= \frac{1}{|M_P|} \sum_{(j,i) \in M_P} S_{i,j} \\
-LAS_{rec} &= \frac{1}{|M_R|} \sum_{(j,i) \in M_R} S_{i,j}
-\end{align}
+Having obtained the correspondence sets $M_P$ and $M_R$ from the Best-Matching Algorithm, VCS computes the LAS by averaging cosine similarities of matched chunk pairs. The precision component $LAS_P$ evaluates how well generated text aligns with reference text, while recall component $LAS_R$ evaluates the reverse. LAS is their harmonic mean:
 
-Finally:
 \begin{equation}
-LAS = \frac{2 \cdot LAS_{prec} \cdot LAS_{rec}}{LAS_{prec} + LAS_{rec}}
+LAS = \frac{2 \cdot LAS_P \cdot LAS_R}{LAS_P + LAS_R}
 \end{equation}
-(The harmonic mean; empty vectors default to 0)
 
 \subsubsection{Narrative Alignment Score (NAS)}
 However, LAS remains insensitive to chronological ordering and exhibits limited sensitivity to missing or extra content. While LAS performs local semantic alignment and can detect content variations, its reliance on semantic similarity averaging means that even weak semantic matches contribute to the overall score, reducing its ability to strongly penalize missing or extraneous content. To mitigate both limitations, VCS introduces NAS that evaluates chronological consistency while enhancing sensitivity to content gaps and additions through narrative alignment assessment. NAS comprises four components: Distance-based NAS ($NAS_D$), Line-based NAS ($NAS_L$), a window regularizer, and the user-controlled Local Narrative Tolerance (LNT) parameter.
@@ -344,37 +290,21 @@ This completes the mathematical definition of NAS, now comprising:
 \item \textbf{Window regulariser} $R_w$ (penalises overly large alignment bands).
 \end{enumerate}
 
-\subsubsection{Scaled Semantic Alignment Score (SAS)}
-Let $GAS \in [0,1]$ and $LAS \in [0,1]$. Define:
-\begin{equation}
-v = GAS - (1 - LAS) = GAS + LAS - 1
+\subsubsection{Final VCS Aggregation}
+The complete VCS integrates semantic and narrative alignment through careful score combination. GAS is modulated by LAS to yield Semantic Alignment Score ($SAS$):
+
+\begin{equation} \label{eq:sas_revised} 
+SAS = \frac{GAS - (1 - LAS)}{LAS}
 \end{equation}
 
-If either (i) $LAS = 0$ or (ii) $v \leq 0$ (equivalently $GAS + LAS \leq 1$), the score is clipped to 0. Otherwise:
-\begin{equation}
-SAS = \frac{GAS + LAS - 1}{LAS}
-\end{equation}
-
-\subsubsection{Scaled Video Comprehension Score (VCS)}
-Let:
+when $LAS > 0$ and the numerator is positive, otherwise $SAS = 0$. This ensures high global similarity requires supporting local semantic agreement. The final VCS uses adaptive weighting with intermediate variables:
 \begin{align}
-s &= SAS \\
-n &= NAS_{final} \\  
-b &= \max(s, n) \\
-a &= \min(s, n)
+S_{min} &= \min(SAS, NAS_{final}) \label{eq:s_min} \\
+S_{max} &= \max(SAS, NAS_{final}) \label{eq:s_max} \\
+VCS &= \frac{S_{min} - (1 - S_{max})}{S_{max}} \label{eq:vcs_final}
 \end{align}
 
-Compute the numerator:
-\begin{equation}
-u = s + n - 1
-\end{equation}
-
-If $u \leq 0$ (i.e., $s + n \leq 1$) or $b = 0$, the score is 0. Otherwise:
-\begin{equation}
-\boxed{VCS = \frac{s + n - 1}{\max(s, n)}}
-\end{equation}
-
-This formulation ensures that high VCS scores require both strong semantic alignment (through SAS) and strong narrative coherence (through NAS), with the final score normalized by the stronger component to prevent inflation when one component dominates.
+when both components are positive and the numerator exceeds zero, otherwise $VCS = 0$.
 
 \subsubsection{Extension for Short-Form Descriptions (VCS$_{short}$)}
 For short-form description evaluation, VCS$_{short}$ adapts the complete VCS methodology to operate at word-level granularity. Input texts undergo cleaning to remove punctuation and stop words, then tokenization into individual words that serve as fundamental elements. These words replace multi-word chunks in all alignment and scoring processes while maintaining identical metric computation and aggregation logic, enabling consistent evaluation across different description lengths.
