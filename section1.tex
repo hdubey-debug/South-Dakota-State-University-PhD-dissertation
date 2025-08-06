@@ -201,9 +201,10 @@ Table~\ref{tab:corruption-results} presents the performance of VCS compared to t
 
 \begin{table*}[t]
 \centering
-\setlength{\tabcolsep}{0.75mm}
-\normalsize
-\begin{tabular}{l|cccccccccc@{\hskip 4pt}|cccccccccc}
+\adjustbox{width=\textwidth,center}{
+\setlength{\tabcolsep}{0.4mm}
+\footnotesize
+\begin{tabular}{l|cccccccccc@{\hskip 2pt}|cccccccccc}
 \hline
 \textbf{Metric} & \multicolumn{10}{c@{\hskip 4pt}}{\textbf{Valid Test Cases}} & \multicolumn{10}{c}{\textbf{Invalid Test Cases}} \\
 \cline{2-11} \cline{12-21}
@@ -265,6 +266,7 @@ Table~\ref{tab:corruption-results} presents the performance of VCS compared to t
 & {\footnotesize $\pm$7.1} & {\footnotesize $\pm$2.6} & {\footnotesize $\pm$1.8} & {\footnotesize $\pm$5.8} & {\footnotesize $\pm$6.5} & {\footnotesize $\pm$3.9} & {\footnotesize $\pm$5.0} & {\footnotesize $\pm$5.2} & {\footnotesize $\pm$6.9} & {\footnotesize $\pm$4.5} & {\footnotesize $\pm$7.0} & {\footnotesize $\pm$14} & {\footnotesize $\pm$4.6} & {\footnotesize $\pm$10} & {\footnotesize $\pm$10} & {\footnotesize $\pm$12} & {\footnotesize $\pm$6.5} & {\footnotesize $\pm$7.6} & {\footnotesize $\pm$2.4} & {\footnotesize $\pm$2.8} \\
 \hline
 \end{tabular}
+}
 \caption{Corruption detection performance across various text transformations. Valid Test Cases represent legitimate variations that should receive high scores, while Invalid Test Cases represent corruptions that should receive low scores. For each metric, the top value represents the mean and the bottom value represents the standard deviation. VCS consistently outperforms traditional metrics by maintaining high scores for valid variations while effectively detecting corruptions.}
 \label{tab:corruption-results}
 \end{table*}
@@ -275,9 +277,10 @@ Table~\ref{tab:author-consistency} presents performance comparison of different 
 
 \begin{table*}[t]
   \centering
-  \normalsize
-  \setlength{\tabcolsep}{0.75mm}
-  \begin{tabular}{l@{\hspace{5mm}}*{3}{c}@{\hspace{5mm}}*{3}{c}@{\hspace{5mm}}*{3}{c}@{\hspace{5mm}}*{3}{c}}
+  \adjustbox{width=\textwidth,center}{
+  \footnotesize
+  \setlength{\tabcolsep}{2mm}
+  \begin{tabular}{l@{\hspace{3mm}}*{3}{c}@{\hspace{3mm}}*{3}{c}@{\hspace{3mm}}*{3}{c}@{\hspace{3mm}}*{3}{c}}
     \hline
     \textbf{Metric} & \multicolumn{3}{c}{\textbf{Author 1}} & \multicolumn{3}{c}{\textbf{Author 2}} & \multicolumn{3}{c}{\textbf{Author 3}} & \multicolumn{3}{c}{\textbf{Author 4}} \\
     \cline{2-4} \cline{5-7} \cline{8-10} \cline{11-13}
@@ -311,6 +314,7 @@ Table~\ref{tab:author-consistency} presents performance comparison of different 
                          & {\footnotesize $\pm$7.7} & {\footnotesize $\pm$6.5} & {\footnotesize $\pm$10} & {\footnotesize $\pm$7.7} & {\footnotesize $\pm$7.7} & {\footnotesize $\pm$8.8} & {\footnotesize $\pm$6.5} & {\footnotesize $\pm$7.7} & {\footnotesize $\pm$8.2} & {\footnotesize $\pm$10} & {\footnotesize $\pm$8.8} & {\footnotesize $\pm$8.2} \\
     \hline
   \end{tabular}
+  }
   \caption{Performance comparison of different metrics across various authorial combinations. For each metric, the top value represents the mean and the bottom value represents the standard deviation. VCS is the only metric that consistently produces scores $>$80\% regardless of which authorial reference is used for evaluation.}
   \label{tab:author-consistency}
 \end{table*}
