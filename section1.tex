@@ -3,13 +3,6 @@
 
 \section{VIDEO COMPREHENSION SCORE (VCS): A METRIC FOR LONG-FORM VIDEO DESCRIPTION EVALUATION}
 
-\begin{figure*}[t]
-\centering
-\includegraphics[width=0.8\textwidth]{images/VCS.pdf}
-\caption{VCS Pipeline. The VCS assesses video descriptions by comparing a reference text ($T_{ref}$) with a model-generated text ($T_{gen}$). Both texts are initially segmented by SaT and embedded via NV-Embed-v2. The Global Alignment Score (GAS) is computed from the full text embeddings. For localized analysis, texts are chunked and embedded, forming a similarity matrix. From this, precision and recall-oriented best matches yield the Local Alignment Score (LAS)—the harmonic mean of $LAS_P$ (precision) and $LAS_R$ (recall). The Narrative Alignment Score (NAS) incorporates distance-based ($NAS_D$) and line-based ($NAS_L$) assessments. $NAS_D$ and $NAS_L$ are harmonic means of their respective precision and recall components. A Window Regularizer ($R_W$) refines the NAS. The Semantic Alignment Score (SAS) is derived by modulating GAS with LAS. The final VCS results from modulating the smaller of SAS and the regularized NAS with the larger.}
-\label{fig:vcs-architecture}
-\end{figure*}
-
 \subsection{INTRODUCTION}
 
 Recent advancements in Large Video Language Models (LVLMs) \cite{Yuan2025Tarsier2,Shen2025LongVU,Ataallah2024Goldfish,Chen2025LongVILA} have enhanced automated video comprehension, enabling long-form description generation from long videos. However, exploratory analysis on long videos reveals that LVLMs frequently (i) miss global narrative structure, (ii) fail to capture local events, and (iii) fail to establish temporal connections while hallucinating content. These gaps indicate LVLMs lack true video comprehension, raising the question: how can we evaluate models' video comprehension? Current benchmarks utilize question-answering formats \cite{wu2024longvideobench,ataallah2024infinibench,nagrani2025neptune} or short-form description comparisons for short videos \cite{wyzs:24,chen:acl11,ZhXuCoAAAI18}, both inadequate to evaluate models' true video comprehension ability. Evaluating genuine comprehension demands shifting to a methodology that processes long or complex videos and requires models to generate long-form descriptions. This approach renders superficial frame-level analysis insufficient, compelling models to instead generate outputs that capture global narrative structure, detail specific local events, and establish their temporal relationships. The quality of these generated descriptions can then be evaluated against the source video or human-written descriptions.
@@ -45,6 +38,13 @@ Recent evaluation approaches increasingly leverage Large Language Models (LLMs),
 
 \subsection{METHODOLOGY}
 \label{sec:methodology_vcs}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.8\textwidth]{images/VCS.pdf}
+\caption{VCS Pipeline. The VCS assesses video descriptions by comparing a reference text ($T_{ref}$) with a model-generated text ($T_{gen}$). Both texts are initially segmented by SaT and embedded via NV-Embed-v2. The Global Alignment Score (GAS) is computed from the full text embeddings. For localized analysis, texts are chunked and embedded, forming a similarity matrix. From this, precision and recall-oriented best matches yield the Local Alignment Score (LAS)—the harmonic mean of $LAS_P$ (precision) and $LAS_R$ (recall). The Narrative Alignment Score (NAS) incorporates distance-based ($NAS_D$) and line-based ($NAS_L$) assessments. $NAS_D$ and $NAS_L$ are harmonic means of their respective precision and recall components. A Window Regularizer ($R_W$) refines the NAS. The Semantic Alignment Score (SAS) is derived by modulating GAS with LAS. The final VCS results from modulating the smaller of SAS and the regularized NAS with the larger.}
+\label{fig:vcs-architecture}
+\end{figure*}
 
 Figure~\ref{fig:vcs-architecture} shows the VCS pipeline, which computes semantic and narrative alignment between reference and generated descriptions to achieve comprehensive long-form video description evaluation.
 
