@@ -56,7 +56,12 @@ VCS computes GAS to capture global thematic alignment between reference and gene
 \end{equation}
 
 \subsubsection{Text Preprocessing for Chunk-Level Analysis}
-However, GAS lacks sensitivity to fine-grained details and chronological consistency. To enable fine-grained analysis, VCS applies punctuation removal and Segment Any Text (SaT)~\cite{frohmann-etal-2024-segment} segmentation to $T_{ref}$ and $T_{gen}$, producing semantic segments $S_{ref}$ and $S_{gen}$. We group $k$ consecutive segments into chunks $C_{ref} = \{c_1^{ref}, \ldots, c_{N_{ref}}^{ref}\}$ and $C_{gen} = \{c_1^{gen}, \ldots, c_{N_{gen}}^{gen}\}$, embedded using NV-Embed-v2 to yield matrices $\mathbf{E}_{C_{ref}} \in \mathbb{R}^{N_{ref} \times D}$ and $\mathbf{E}_{C_{gen}} \in \mathbb{R}^{N_{gen} \times D}$.
+However, GAS lacks sensitivity to fine-grained details and chronological consistency. To enable fine-grained analysis, VCS applies punctuation removal and Segment Any Text (SaT)~\cite{frohmann-etal-2024-segment} segmentation to $T_{ref}$ and $T_{gen}$, producing semantic segments $S_{ref}$ and $S_{gen}$. We group $k$ consecutive segments into chunks:
+\begin{align}
+C_{ref} &= \{c_1^{ref}, \ldots, c_{N_{ref}}^{ref}\} \\
+C_{gen} &= \{c_1^{gen}, \ldots, c_{N_{gen}}^{gen}\}
+\end{align}
+embedded using NV-Embed-v2 to yield matrices $\mathbf{E}_{C_{ref}} \in \mathbb{R}^{N_{ref} \times D}$ and $\mathbf{E}_{C_{gen}} \in \mathbb{R}^{N_{gen} \times D}$.
 
 \subsubsection{Defining Mapping Windows}
 Before establishing chunk correspondences for fine-grained assessment, VCS constructs a similarity matrix to enable optimal alignments. Using $\mathbf{E}_{C_{ref}}$ and $\mathbf{E}_{C_{gen}}$, we compute similarity matrix:
@@ -72,14 +77,26 @@ VCS identifies the longer sequence as $\max(N_{ref}, N_{gen})$ and the shorter s
 \subsubsection{Best Matching Algorithm}
 Having established Mapping Windows within the similarity matrix $\mathbf{S}$, VCS pairs each generated chunk with its best reference counterpart, and vice versa. Naively selecting the highest-similarity reference for each generated chunk leads to semantic collision and semantic ambiguity. Semantic collision occurs when a single chunk exhibits identical similarity to multiple counterparts, while semantic ambiguity arises when a chunk achieves nearly equal similarity with multiple candidates. Both issues stem from repeated events or superficial lexical overlap, obscuring true narrative counterparts.
 
-VCS resolves these issues through a Best-Matching Algorithm that combines adaptive context filtering with mapping-window constraints. Adaptive context filtering first determines a candidate set around the maximum similarity rather than committing immediately to the top score. Two user-defined parameters control this process: the context cutoff $\tau_{ctx}$ (default 0.6) and the context window control $k_{ctx}$ (default 4). Similarities below the cutoff receive no context expansion, while those above it define a context window whose width is computed as $w_{ctx} = \frac{(1-\tau_{ctx})-(1-s_{max})}{s_{max} \cdot k_{ctx}}$,
+VCS resolves these issues through a Best-Matching Algorithm that combines adaptive context filtering with mapping-window constraints. Adaptive context filtering first determines a candidate set around the maximum similarity rather than committing immediately to the top score. Two user-defined parameters control this process: the context cutoff $\tau_{ctx}$ (default 0.6) and the context window control $k_{ctx}$ (default 4). Similarities below the cutoff receive no context expansion, while those above it define a context window whose width is computed as
+
+\begin{equation}
+w_{ctx} = \frac{(1-\tau_{ctx})-(1-s_{max})}{s_{max} \cdot k_{ctx}},
+\end{equation}
 
 where $s_{max}$ is the maximum similarity for the chunk. All candidates within $s_{max} - w_{ctx}$ enter the pool for selection. Mapping-window constraints then enforce temporal alignment: among the candidate matches, the algorithm chooses the chunk closest to the mapping-window boundary of the target chunk, breaking ties by similarity. When $s_{max}$ falls below the cutoff, no context expansion occurs, and ties are resolved purely by distance from the mapping-window boundary.
 
-This combination mitigates both collision and ambiguity. Executing this procedure for each generated chunk and each reference chunk yields precision best matches $M_P = \{(C_j^{gen}, C_{i^*}^{ref})\}$ and recall best matches $M_R = \{(C_i^{ref}, C_{j^*}^{gen})\}$.
+This combination mitigates both collision and ambiguity. Executing this procedure for each generated chunk and each reference chunk yields:
+\begin{align}
+M_P &= \{(C_j^{gen}, C_{i^*}^{ref})\} \quad \text{(precision best matches)} \\
+M_R &= \{(C_i^{ref}, C_{j^*}^{gen})\} \quad \text{(recall best matches)}
+\end{align}
 
 \subsubsection{Local Alignment Score (LAS)}
-Having obtained the correspondence sets $M_P$ and $M_R$ from the Best-Matching Algorithm, VCS computes the LAS by averaging cosine similarities of matched chunk pairs. The precision component $LAS_P$ evaluates how well generated text aligns with reference text, while recall component $LAS_R$ evaluates the reverse. LAS is their harmonic mean $LAS = \frac{2 \cdot LAS_P \cdot LAS_R}{LAS_P + LAS_R}$.
+Having obtained the correspondence sets $M_P$ and $M_R$ from the Best-Matching Algorithm, VCS computes the LAS by averaging cosine similarities of matched chunk pairs. The precision component $LAS_P$ evaluates how well generated text aligns with reference text, while recall component $LAS_R$ evaluates the reverse. LAS is their harmonic mean:
+
+\begin{equation}
+LAS = \frac{2 \cdot LAS_P \cdot LAS_R}{LAS_P + LAS_R}
+\end{equation}
 
 \subsubsection{Narrative Alignment Score (NAS)}
 However, LAS remains insensitive to chronological ordering and exhibits limited sensitivity to missing or extra content. While LAS performs local semantic alignment and can detect content variations, its reliance on semantic similarity averaging means that even weak semantic matches contribute to the overall score, reducing its ability to strongly penalize missing or extraneous content. To mitigate both limitations, VCS introduces NAS that evaluates chronological consistency while enhancing sensitivity to content gaps and additions through narrative alignment assessment. NAS comprises four components: Distance-based NAS ($NAS_D$), Line-based NAS ($NAS_L$), a window regularizer, and the user-controlled Local Narrative Tolerance (LNT) parameter.
@@ -91,56 +108,110 @@ Before assessing narrative alignment, VCS defines a user-controlled parameter ca
 Given the one-to-one correspondences $M_P$ (generated$\rightarrow$reference) and $M_R$ (reference$\rightarrow$generated) returned by the Best-Matching Algorithm, $NAS_D$ penalises every match whose index falls outside its Mapping Window. Let $y$ denote the length of the timeline being evaluated (reference when computing precision, generated when computing recall) and $\ell$ be the total number of Mapping Windows in that orientation.
 
 \paragraph{Local Chronology Tolerance (LCT)}
-The auxiliary window height that defines the tolerance zone is $h_{LCT} = \left\lceil \frac{y}{x} \right\rceil - \mathbf{1}[y > x \land 0 < \frac{y}{x} - \left\lfloor \frac{y}{x} \right\rfloor \leq 0.5]$
+The auxiliary window height that defines the tolerance zone is:
+\begin{equation}
+h_{LCT} = \left\lceil \frac{y}{x} \right\rceil - \mathbf{1}[y > x \land 0 < \frac{y}{x} - \left\lfloor \frac{y}{x} \right\rfloor \leq 0.5]
+\end{equation}
 where $x$ is the length of the opposite timeline. Thus $h_{LCT}$ is the Mapping-Window height (ceiling of the length ratio) but drops by one row when the longer/shorter ratio's fractional part lies in $(0, 0.5]$.
 
 A user-controlled multiplier $\tau_{LCT} \geq 0$ expands each Mapping Window by $\tau_{LCT} \cdot h_{LCT}$ rows on both sides. Any match whose vertical distance from the window boundary is $\leq \tau_{LCT} \cdot h_{LCT}$ is treated as chronologically acceptable and incurs no penalty.
 
 \paragraph{Per-chunk distance penalty}
-For a match located at index $k$ with original Mapping Window $[s, e)$, the distance penalty is $d(k) = s - k$ if $k < s$ and $d(k) = k - (e - 1)$ if $k \geq e$. After applying LCT, the effective penalty for that chunk is $p(k) = \frac{\max(0, d(k) - \tau_{LCT} \cdot h_{LCT})}{y}$, and $p(k) = 0$ if the chunk was already inside its window.
+For a match located at index $k$ with original Mapping Window $[s, e)$:
+\begin{equation}
+d(k) = \begin{cases}
+s - k, & k < s, \\
+k - (e - 1), & k \geq e.
+\end{cases}
+\end{equation}
+After applying LCT, the effective penalty for that chunk is:
+\begin{equation}
+p(k) = \frac{\max(0, d(k) - \tau_{LCT} \cdot h_{LCT})}{y}
+\end{equation}
+and $p(k) = 0$ if the chunk was already inside its window.
 
 \paragraph{Sequence-level normalisation}
-The actual total penalty $P_{total} = \sum_{j=1}^{\ell} p(k_j)$ and maximum possible penalty $P_{\max} = \frac{1}{y} \sum_{j=1}^{\ell} \max(s_j, y - e_j)$ (obtained by pushing every match to whichever timeline edge is further away) yield the orientation-specific scores $NAS_{D,prec} = 1 - \frac{P_{total,prec}}{P_{\max,prec}}$ and $NAS_{D,rec} = 1 - \frac{P_{total,rec}}{P_{\max,rec}}$.
+The actual total penalty is:
+\begin{equation}
+P_{total} = \sum_{j=1}^{\ell} p(k_j)
+\end{equation}
+while the maximum possible penalty for the same window layout is obtained by pushing every match to whichever timeline edge is further away:
+\begin{equation}
+P_{\max} = \frac{1}{y} \sum_{j=1}^{\ell} \max(s_j, y - e_j)
+\end{equation}
+The orientation-specific score is then:
+\begin{align}
+NAS_{D,prec} &= 1 - \frac{P_{total,prec}}{P_{\max,prec}} \\
+NAS_{D,rec} &= 1 - \frac{P_{total,rec}}{P_{\max,rec}}
+\end{align}
 
 \paragraph{Bidirectional fusion}
-Finally, $NAS_D$ combines both views through the harmonic mean $NAS_D = \frac{2 \cdot NAS_{D,prec} \cdot NAS_{D,rec}}{NAS_{D,prec} + NAS_{D,rec}}$.
+Finally, $NAS_D$ combines both views through the harmonic mean:
+\begin{equation}
+NAS_D = \frac{2 \cdot NAS_{D,prec} \cdot NAS_{D,rec}}{NAS_{D,prec} + NAS_{D,rec}}
+\end{equation}
 
 \subsubsection{Line-based NAS ($NAS_L$)}
 
 \paragraph{Ideal narrative-line band}
 Let the Mapping Windows be $W_i = [a_i, b_i)$ for $i = 1, \ldots, n$ with $x_i = i$. The shortest and longest feasible path lengths:
-\begin{equation}
-L_{\min} = \min_{y_i \in W_i} \sum_{i=1}^{n-1} \sqrt{(x_{i+1} - x_i)^2 + (y_{i+1} - y_i)^2}, \quad L_{\max} = \max_{y_i \in W_i} \sum_{i=1}^{n-1} \sqrt{(x_{i+1} - x_i)^2 + (y_{i+1} - y_i)^2}
-\end{equation}
+\begin{align}
+L_{\min} &= \min_{y_i \in W_i} \sum_{i=1}^{n-1} \sqrt{(x_{i+1} - x_i)^2 + (y_{i+1} - y_i)^2} \\
+L_{\max} &= \max_{y_i \in W_i} \sum_{i=1}^{n-1} \sqrt{(x_{i+1} - x_i)^2 + (y_{i+1} - y_i)^2}
+\end{align}
 are obtained by dynamic-programming over consecutive windows: every candidate $y_{i+1}$ is relaxed from every candidate $y_i$ with edge-weight $\sqrt{1^2 + (y_{i+1} - y_i)^2}$. Tracing predecessors yields a floor path of length $L_{\min}$ and a ceil path of length $L_{\max}$.
 
 The successive vertical differences $\Delta y_i^{\text{floor}}$ along the floor path are cached in a map $\text{DY}_{\text{floor}}[x_i] = \Delta y_i^{\text{floor}}$; they later cap oversized jumps when Local Chronology Tolerance (LCT) is enabled.
 
 \paragraph{Local Chronology Tolerance (LCT)}
-Let $L_s$ be the length of the source timeline (x-axis) and $L_t$ the length of the target timeline (y-axis). Define the base Mapping-Window height $h_{mw} = \left\lceil \frac{L_t}{L_s} \right\rceil$.
-From this, the LCT window $\omega_0$ and its expanded version $\omega_{LCT}$ are defined where $\rho = L_t/L_s - \lfloor L_t/L_s \rfloor$ and $\tau_{LCT} \in \mathbb{N}_{\geq 0}$ is user-set:
-\begin{align}
-\omega_0 &= \begin{cases}
+Let $L_s$ be the length of the source timeline (x-axis) and $L_t$ the length of the target timeline (y-axis). Define the base Mapping-Window height:
+\begin{equation}
+h_{mw} = \left\lceil \frac{L_t}{L_s} \right\rceil
+\end{equation}
+From this, the LCT window $\omega_0$ and its expanded version $\omega_{LCT}$ are set exactly as in the code:
+\begin{equation}
+\omega_0 = \begin{cases}
 h_{mw}, & L_t \leq L_s, \\
 2h_{mw} - 2, & L_t > L_s \text{ and } 0 < \rho \leq 0.5, \\
 2h_{mw} - 1, & L_t > L_s \text{ and } \rho > 0.5,
-\end{cases} \\
-\omega_{LCT} &= \omega_0 + \begin{cases}
+\end{cases}
+\end{equation}
+\begin{equation}
+\omega_{LCT} = \omega_0 + \begin{cases}
 h_{mw} \tau_{LCT}, & L_t \leq L_s, \\
 (h_{mw} - 1) \tau_{LCT}, & 0 < \rho \leq 0.5, \\
-h_{mw} \tau_{LCT}, & \rho > 0.5
+h_{mw} \tau_{LCT}, & \rho > 0.5,
 \end{cases}
-\end{align}
+\end{equation}
+where $\rho = L_t/L_s - \lfloor L_t/L_s \rfloor$ and $\tau_{LCT} \in \mathbb{N}_{\geq 0}$ is user-set.
 
 \paragraph{Actual narrative-line length}
-The aligned points are sorted by the source index. For consecutive pairs $(x_i, y_i)$, $(x_{i+1}, y_{i+1})$ define $\Delta x_i = x_{i+1} - x_i$, $\Delta y_i = y_{i+1} - y_i$, and $|\Delta y_i|^* = |\Delta y_i|$ if $\tau_{LCT} > 0$ or $|\Delta y_i|^* = \Delta y_i$ if $\tau_{LCT} = 0$. Each segment is scored as follows:
+The aligned points are sorted by the source index. For consecutive pairs $(x_i, y_i)$, $(x_{i+1}, y_{i+1})$ define:
+\begin{align}
+\Delta x_i &= x_{i+1} - x_i \\
+\Delta y_i &= y_{i+1} - y_i \\
+|\Delta y_i|^* &= \begin{cases}
+|\Delta y_i|, & \tau_{LCT} > 0, \\
+\Delta y_i, & \tau_{LCT} = 0.
+\end{cases}
+\end{align}
+Each segment is scored as follows:
 \begin{itemize}
-\item \textbf{Standard segment} if $0 \leq |\Delta y_i|^* \leq \omega_0$: $\ell_i = \sqrt{\Delta x_i^2 + \Delta y_i^2}$
-\item \textbf{LCT-capped segment} if $\omega_0 < |\Delta y_i|^* \leq \omega_{LCT}$ (requires $\tau_{LCT} > 0$): $\ell_i = \sqrt{\Delta x_i^2 + (|\Delta y_{x_i}^{\text{floor}}|)^2}$
+\item \textbf{Standard segment} if $0 \leq |\Delta y_i|^* \leq \omega_0$:
+\begin{equation}
+\ell_i = \sqrt{\Delta x_i^2 + \Delta y_i^2}
+\end{equation}
+\item \textbf{LCT-capped segment} if $\omega_0 < |\Delta y_i|^* \leq \omega_{LCT}$ (requires $\tau_{LCT} > 0$):
+\begin{equation}
+\ell_i = \sqrt{\Delta x_i^2 + (|\Delta y_{x_i}^{\text{floor}}|)^2}
+\end{equation}
 the vertical jump is clipped to the ideal floor slope.
 \item \textbf{Otherwise} (overshoot or negative slope) $\ell_i = 0$.
 \end{itemize}
-The actual line length is $L_{\text{act}} = \sum_i \ell_i$.
+The actual line length is:
+\begin{equation}
+L_{\text{act}} = \sum_i \ell_i
+\end{equation}
 
 \paragraph{Orientation-specific score}
 For each orientation (precision and recall) the score is:
@@ -154,7 +225,10 @@ NAS_L = \begin{cases}
 This is exactly the branching logic in the implementation.
 
 \paragraph{Bidirectional fusion}
-Calling the procedure twice—once with the reference as source (precision) and once with roles swapped (recall)—yields $NAS_{L,prec}$ and $NAS_{L,rec}$. They are combined symmetrically by the harmonic mean $NAS_L = \frac{2 \cdot NAS_{L,prec} \cdot NAS_{L,rec}}{NAS_{L,prec} + NAS_{L,rec}}$.
+Calling the procedure twice—once with the reference as source (precision) and once with roles swapped (recall)—yields $NAS_{L,prec}$ and $NAS_{L,rec}$. They are combined symmetrically by the harmonic mean:
+\begin{equation}
+NAS_L = \frac{2 \cdot NAS_{L,prec} \cdot NAS_{L,rec}}{NAS_{L,prec} + NAS_{L,rec}}
+\end{equation}
 mirroring the fusion used for distance-based NAS.
 
 With this formulation, paths that remain within the ideal band score 1.0; drastic inversions collapse $\ell_i$ to zero, pushing $L_{\text{act}}$ below $L_{\min}$ and the score toward 0, while minor narrative reorderings are absorbed by $\tau_{LCT}$ to avoid undue penalties.
@@ -163,18 +237,40 @@ With this formulation, paths that remain within the ideal band score 1.0; drasti
 Let $N_{ref}$ and $N_{gen}$ be the reference- and generated-lengths, $\text{MW}_{prec}$ and $\text{MW}_{rec}$ the Mapping-Window lists produced earlier, each window $w_j = [s_j, e_j)$ having height $h_j = e_j - s_j$.
 
 \paragraph{Choose the orientation to regularise}
-Use the window set that spans the longer vertical timeline: $\mathcal{W} = \text{MW}_{rec}$ if $N_{ref} < N_{gen}$, otherwise $\mathcal{W} = \text{MW}_{prec}$.
+Use the window set that spans the longer vertical timeline:
+\begin{equation}
+\mathcal{W} = \begin{cases} 
+\text{MW}_{rec}, & N_{ref} < N_{gen}, \\
+\text{MW}_{prec}, & N_{ref} \geq N_{gen}.
+\end{cases}
+\end{equation}
 
 \paragraph{Compute the window-coverage ratio}
-Total Mapping-Window area (each window is one unit wide on the horizontal axis) $A_{MW} = \sum_{w_j \in \mathcal{W}} h_j$ and overall comparison grid area $A_{timeline} = N_{ref} \cdot N_{gen}$.
-The \textit{theoretical minimum} coverage when every window is height 1 is $a_{min} = \frac{1}{\max(N_{ref}, N_{gen})}$.
+Total Mapping-Window area (each window is one unit wide on the horizontal axis):
+\begin{equation}
+A_{MW} = \sum_{w_j \in \mathcal{W}} h_j
+\end{equation}
+Overall comparison grid area:
+\begin{equation}
+A_{timeline} = N_{ref} \cdot N_{gen}
+\end{equation}
+The \textit{theoretical minimum} coverage when every window is height 1 is:
+\begin{equation}
+a_{min} = \frac{1}{\max(N_{ref}, N_{gen})}
+\end{equation}
 
 \paragraph{Window regulariser}
-Let $a = A_{MW}/A_{timeline}$ be the observed area ratio. The regulariser rescales $a$ into $[0,1]$ with a lower anchor at $a_{min}$ and an upper anchor at $0.5$ as $R_w = \text{clip}\left(\frac{a - a_{min}}{0.5 - a_{min}}, 0, 1\right)$.
+Let $a = A_{MW}/A_{timeline}$ be the observed area ratio. The regulariser rescales $a$ into $[0,1]$ with a lower anchor at $a_{min}$ and an upper anchor at $0.5$:
+\begin{equation}
+R_w = \text{clip}\left(\frac{a - a_{min}}{0.5 - a_{min}}, 0, 1\right)
+\end{equation}
 If the grid degenerates (zero area) the regulariser defaults to 0.
 
 \paragraph{Combine $NAS_D$ and $NAS_L$}
-From previous sections we already have $\text{NAS}_D \in [0,1]$ and $\text{NAS}_L \in [0,1]$. Fuse them with the harmonic mean $NAS_{F1} = \frac{2 \cdot NAS_D \cdot NAS_L}{NAS_D + NAS_L}$ (set to 0 if $NAS_D + NAS_L = 0$).
+From previous sections we already have $\text{NAS}_D \in [0,1]$ and $\text{NAS}_L \in [0,1]$. Fuse them with the harmonic mean:
+\begin{equation}
+NAS_{F1} = \frac{2 \cdot NAS_D \cdot NAS_L}{NAS_D + NAS_L} \quad \text{(set to 0 if } NAS_D + NAS_L = 0\text{)}
+\end{equation}
 
 \paragraph{Regularised NAS}
 Finally, penalise overly wide windows:
@@ -195,7 +291,18 @@ This completes the mathematical definition of NAS, now comprising:
 \end{enumerate}
 
 \subsubsection{Final VCS Aggregation}
-The complete VCS integrates semantic and narrative alignment through careful score combination. GAS is modulated by LAS to yield Semantic Alignment Score $SAS = \frac{GAS - (1 - LAS)}{LAS}$ when $LAS > 0$ and the numerator is positive, otherwise $SAS = 0$. This ensures high global similarity requires supporting local semantic agreement. The final VCS uses adaptive weighting with intermediate variables $S_{min} = \min(SAS, NAS_{final})$, $S_{max} = \max(SAS, NAS_{final})$, and $VCS = \frac{S_{min} - (1 - S_{max})}{S_{max}}$
+The complete VCS integrates semantic and narrative alignment through careful score combination. GAS is modulated by LAS to yield Semantic Alignment Score ($SAS$):
+
+\begin{equation} \label{eq:sas_revised} 
+SAS = \frac{GAS - (1 - LAS)}{LAS}
+\end{equation}
+
+when $LAS > 0$ and the numerator is positive, otherwise $SAS = 0$. This ensures high global similarity requires supporting local semantic agreement. The final VCS uses adaptive weighting with intermediate variables:
+\begin{align}
+S_{min} &= \min(SAS, NAS_{final}) \label{eq:s_min} \\
+S_{max} &= \max(SAS, NAS_{final}) \label{eq:s_max} \\
+VCS &= \frac{S_{min} - (1 - S_{max})}{S_{max}} \label{eq:vcs_final}
+\end{align}
 
 when both components are positive and the numerator exceeds zero, otherwise $VCS = 0$.
 
