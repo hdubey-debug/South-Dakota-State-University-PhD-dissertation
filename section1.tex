@@ -150,9 +150,10 @@ While Mapping Windows constrain the search space and define the global position 
 
 \paragraph{Ideal narrative-line band}
 Because Mapping Windows allow flexibility in chunk alignment, multiple valid narrative line paths are possible through these windows. VCS calculates the theoretical shortest and longest feasible line lengths to establish bounds for valid narrative flow. Using the previously defined mapping windows $MW_p$ and $MW_r$, the ideal line band is computed as:
-\begin{equation}
-L_{\min} = \min_{y_i \in MW} \sum_{i=1}^{n-1} \sqrt{(x_{i+1} - x_i)^2 + (y_{i+1} - y_i)^2}, \quad L_{\max} = \max_{y_i \in MW} \sum_{i=1}^{n-1} \sqrt{(x_{i+1} - x_i)^2 + (y_{i+1} - y_i)^2}
-\end{equation}
+\begin{align}
+L_{\min} &= \min_{y_i \in MW} \sum_{i=1}^{n-1} \sqrt{(x_{i+1} - x_i)^2 + (y_{i+1} - y_i)^2} \\
+L_{\max} &= \max_{y_i \in MW} \sum_{i=1}^{n-1} \sqrt{(x_{i+1} - x_i)^2 + (y_{i+1} - y_i)^2}
+\end{align}
 These bounds are obtained through dynamic programming over consecutive windows: each candidate position $y_{i+1}$ is evaluated from every candidate position $y_i$ with edge-weight $\sqrt{1^2 + (y_{i+1} - y_i)^2}$. Tracing predecessors yields the optimal floor path (shortest line) and ceil path (longest line). The vertical differences $\Delta y_i^{\text{floor}}$ along the floor path are cached as $\text{DY}_{\text{floor}}[x_i] = \Delta y_i^{\text{floor}}$ to later constrain oversized jumps when LNT is applied.
 
 \paragraph{Local Narrative Tolerance (LNT)}
@@ -221,28 +222,28 @@ The final NAS is then regularized by window coverage to penalize unfair advantag
 \end{equation}
 When Mapping Windows maintain reasonable constraints ($R_w \approx 0$), the score approximates $NAS_{F1}$. As window coverage approaches the critical 50\% threshold ($R_w \to 1$), even perfect alignment scores are progressively dampened toward zero, ensuring that overly permissive windowing cannot mask genuine narrative disorder.
 
-This completes the mathematical definition of NAS, now comprising:
-\begin{enumerate}
-\item \textbf{Distance-based component} $NAS_D$ (positional fidelity),
-\item \textbf{Line-based component} $NAS_L$ (global path coherence),
-\item \textbf{Window regulariser} $R_w$ (penalises overly large alignment bands).
-\end{enumerate}
 
 \subsubsection{Final VCS Aggregation}
-The complete VCS integrates semantic and narrative alignment through careful score combination. GAS is modulated by LAS to yield Semantic Alignment Score ($SAS$):
+VCS employs a two-stage semantic assessment process that ensures comprehensive video description evaluation through hierarchical score integration.
 
+\paragraph{Stage 1: Semantic Alignment Score (SAS)}
+The first stage combines GAS and LAS to create the Semantic Alignment Score, where LAS acts as a regularizer for GAS. The goal is to modulate and correct global semantic confidence by incorporating local alignment quality, creating true semantic alignment:
 \begin{equation} \label{eq:sas_revised} 
 SAS = \frac{GAS - (1 - LAS)}{LAS}
 \end{equation}
+when $LAS > 0$ and the numerator is positive, otherwise $SAS = 0$. This formulation ensures that strong global confidence (high GAS) is preserved when supported by solid local alignment (high LAS), while weak local alignment heavily regularizes even confident global assessments.
 
-when $LAS > 0$ and the numerator is positive, otherwise $SAS = 0$. This ensures high global similarity requires supporting local semantic agreement. The final VCS uses adaptive weighting with intermediate variables:
+\paragraph{Stage 2: Final VCS Integration}
+The second stage integrates SAS with NAS to produce the final VCS, where the weaker component regularizes the stronger one. This ensures both semantic understanding and narrative coherence must be present for high scores:
 \begin{align}
 S_{min} &= \min(SAS, NAS_{final}) \label{eq:s_min} \\
 S_{max} &= \max(SAS, NAS_{final}) \label{eq:s_max} \\
 VCS &= \frac{S_{min} - (1 - S_{max})}{S_{max}} \label{eq:vcs_final}
 \end{align}
+when both components are positive and the numerator exceeds zero, otherwise $VCS = 0$. This adaptive weighting captures the fundamental insight that both semantic accuracy and narrative order must be strong for coherent video storytelling.
 
-when both components are positive and the numerator exceeds zero, otherwise $VCS = 0$.
+\paragraph{Story Coherence Logic}
+The VCS framework addresses four critical evaluation scenarios through its hierarchical design. When GAS is high but LAS is low (same story, different expression), local chunking noise affects alignment, causing LAS to heavily regularize the global confidence—correctly identifying that superficial similarity masks alignment issues. When both GAS and LAS are low (low global confidence with poor local alignment), this indicates mere superficial word overlap without genuine story similarity. When NAS is high but SAS is low (wrong content in right order), this reveals correct chronological structure but incorrect semantic content—no meaningful story comprehension exists. Finally, when SAS is high but NAS is low (right content in wrong order), this indicates semantic understanding without narrative coherence—again resulting in incoherent storytelling. The VCS framework's two-stage regularization ensures that only descriptions demonstrating both semantic fidelity and narrative coherence achieve high scores, reflecting true video comprehension.
 
 \subsubsection{Extension for Short-Form Descriptions (VCS$_{short}$)}
 For short-form description evaluation, VCS$_{short}$ adapts the complete VCS methodology to operate at word-level granularity. Input texts undergo cleaning to remove punctuation and stop words, then tokenization into individual words that serve as fundamental elements. These words replace multi-word chunks in all alignment and scoring processes while maintaining identical metric computation and aggregation logic, enabling consistent evaluation across different description lengths.
