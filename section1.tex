@@ -149,75 +149,41 @@ NAS_D = \frac{2 \cdot NAS_{D,P} \cdot NAS_{D,R}}{NAS_{D,P} + NAS_{D,R}}
 While Mapping Windows constrain the search space and define the global position of each chunk in the narrative, their height essentially indicates how far apart neighboring chunks should be from each other to capture local narrative flow. $NAS_L$ formalizes this intuition by measuring how far apart two neighboring chunks are in the alignment path, and if they maintain expected distances, they contribute to the narrative line length, which is later compared with the ideal line to assess local narrative coherence.
 
 \paragraph{Ideal narrative-line band}
-Let the Mapping Windows be $W_i = [a_i, b_i)$ for $i = 1, \ldots, n$ with $x_i = i$. The shortest and longest feasible path lengths:
-\begin{align}
-L_{\min} &= \min_{y_i \in W_i} \sum_{i=1}^{n-1} \sqrt{(x_{i+1} - x_i)^2 + (y_{i+1} - y_i)^2} \\
-L_{\max} &= \max_{y_i \in W_i} \sum_{i=1}^{n-1} \sqrt{(x_{i+1} - x_i)^2 + (y_{i+1} - y_i)^2}
-\end{align}
-are obtained by dynamic-programming over consecutive windows: every candidate $y_{i+1}$ is relaxed from every candidate $y_i$ with edge-weight $\sqrt{1^2 + (y_{i+1} - y_i)^2}$. Tracing predecessors yields a floor path of length $L_{\min}$ and a ceil path of length $L_{\max}$.
-
-The successive vertical differences $\Delta y_i^{\text{floor}}$ along the floor path are cached in a map $\text{DY}_{\text{floor}}[x_i] = \Delta y_i^{\text{floor}}$; they later cap oversized jumps when Local Narrative Tolerance (LNT) is enabled.
+Because Mapping Windows allow flexibility in chunk alignment, multiple valid narrative line paths are possible through these windows. VCS calculates the theoretical shortest and longest feasible line lengths to establish bounds for valid narrative flow. Using the previously defined mapping windows $MW_p$ and $MW_r$, the ideal line band is computed as:
+\begin{equation}
+L_{\min} = \min_{y_i \in MW} \sum_{i=1}^{n-1} \sqrt{(x_{i+1} - x_i)^2 + (y_{i+1} - y_i)^2}, \quad L_{\max} = \max_{y_i \in MW} \sum_{i=1}^{n-1} \sqrt{(x_{i+1} - x_i)^2 + (y_{i+1} - y_i)^2}
+\end{equation}
+These bounds are obtained through dynamic programming over consecutive windows: each candidate position $y_{i+1}$ is evaluated from every candidate position $y_i$ with edge-weight $\sqrt{1^2 + (y_{i+1} - y_i)^2}$. Tracing predecessors yields the optimal floor path (shortest line) and ceil path (longest line). The vertical differences $\Delta y_i^{\text{floor}}$ along the floor path are cached as $\text{DY}_{\text{floor}}[x_i] = \Delta y_i^{\text{floor}}$ to later constrain oversized jumps when LNT is applied.
 
 \paragraph{Local Narrative Tolerance (LNT)}
-Let $L_s$ be the length of the source timeline (x-axis) and $L_t$ the length of the target timeline (y-axis). Define the base Mapping-Window height:
-\begin{equation}
-h_{mw} = \left\lceil \frac{L_t}{L_s} \right\rceil
-\end{equation}
-From this, the LNT window $\omega_0$ and its expanded version $\omega_{LNT}$ are set exactly as in the code:
-\begin{equation}
-\omega_0 = \begin{cases}
+To accommodate natural narrative variations in local flow, VCS applies LNT to define acceptable vertical jump ranges between consecutive alignment points. The base tolerance window $\omega_0$ and its LNT-expanded version $\omega_{LNT}$ are computed using the mapping window height $h_{mw} = \lceil L_t/L_s \rceil$, where $L_s$ and $L_t$ represent source and target timeline lengths respectively:
+\begin{align}
+\omega_0 &= \begin{cases}
 h_{mw}, & L_t \leq L_s, \\
 2h_{mw} - 2, & L_t > L_s \text{ and } 0 < \rho \leq 0.5, \\
-2h_{mw} - 1, & L_t > L_s \text{ and } \rho > 0.5,
-\end{cases}
-\end{equation}
-\begin{equation}
-\omega_{LNT} = \omega_0 + \begin{cases}
+2h_{mw} - 1, & L_t > L_s \text{ and } \rho > 0.5
+\end{cases} \\
+\omega_{LNT} &= \omega_0 + \begin{cases}
 h_{mw} \tau_{LNT}, & L_t \leq L_s, \\
 (h_{mw} - 1) \tau_{LNT}, & 0 < \rho \leq 0.5, \\
-h_{mw} \tau_{LNT}, & \rho > 0.5,
-\end{cases}
-\end{equation}
-where $\rho = L_t/L_s - \lfloor L_t/L_s \rfloor$ and $\tau_{LNT} \in \mathbb{N}_{\geq 0}$ is user-set.
-
-\paragraph{Actual narrative-line length}
-The aligned points are sorted by the source index. For consecutive pairs $(x_i, y_i)$, $(x_{i+1}, y_{i+1})$ define:
-\begin{align}
-\Delta x_i &= x_{i+1} - x_i \\
-\Delta y_i &= y_{i+1} - y_i \\
-|\Delta y_i|^* &= \begin{cases}
-|\Delta y_i|, & \tau_{LNT} > 0, \\
-\Delta y_i, & \tau_{LNT} = 0.
+h_{mw} \tau_{LNT}, & \rho > 0.5
 \end{cases}
 \end{align}
-Each segment is scored as follows:
-\begin{itemize}
-\item \textbf{Standard segment} if $0 \leq |\Delta y_i|^* \leq \omega_0$:
-\begin{equation}
-\ell_i = \sqrt{\Delta x_i^2 + \Delta y_i^2}
-\end{equation}
-\item \textbf{LNT-capped segment} if $\omega_0 < |\Delta y_i|^* \leq \omega_{LNT}$ (requires $\tau_{LNT} > 0$):
-\begin{equation}
-\ell_i = \sqrt{\Delta x_i^2 + (|\Delta y_{x_i}^{\text{floor}}|)^2}
-\end{equation}
-the vertical jump is clipped to the ideal floor slope.
-\item \textbf{Otherwise} (overshoot or negative slope) $\ell_i = 0$.
-\end{itemize}
-The actual line length is:
-\begin{equation}
-L_{\text{act}} = \sum_i \ell_i
-\end{equation}
+where $\rho = L_t/L_s - \lfloor L_t/L_s \rfloor$ represents the fractional part of the length ratio and $\tau_{LNT} \in \mathbb{N}_{\geq 0}$ is the user-controlled tolerance multiplier.
+
+\paragraph{Actual narrative-line length}
+The actual narrative line is constructed by connecting aligned chunk positions and measuring the total path length. For consecutive alignment pairs $(x_i, y_i)$ and $(x_{i+1}, y_{i+1})$ sorted by source index, each segment contributes to the line length based on its vertical jump magnitude. The segment length $\ell_i$ is computed as the standard Euclidean distance $\sqrt{(x_{i+1} - x_i)^2 + (y_{i+1} - y_i)^2}$ when the vertical jump $|y_{i+1} - y_i|$ falls within the base tolerance $\omega_0$. For moderate jumps exceeding $\omega_0$ but within the expanded tolerance $\omega_{LNT}$, the vertical component is clipped to the ideal floor slope $|\Delta y_{x_i}^{\text{floor}}|$ to prevent excessive penalties for acceptable narrative reordering. Extreme jumps beyond $\omega_{LNT}$ contribute zero length, effectively penalizing severe chronological violations. The total actual line length is $L_{\text{act}} = \sum_i \ell_i$.
 
 \paragraph{Orientation-specific score}
-For each orientation (precision and recall) the score is:
+The line-based score evaluates whether the actual narrative line length falls within the ideal band. Paths maintaining expected narrative flow (where $L_{\min} \leq L_{\text{act}} \leq L_{\max}$) receive perfect scores of 1.0. Paths shorter than the minimum ideal length are penalized proportionally as $L_{\text{act}}/L_{\min}$, while paths exceeding the maximum ideal length are penalized inversely as $L_{\max}/L_{\text{act}}$:
 \begin{equation}
 NAS_L = \begin{cases}
 1, & L_{\min} \leq L_{\text{act}} \leq L_{\max}, \\
 \frac{L_{\text{act}}}{L_{\min}}, & L_{\text{act}} < L_{\min}, \\
-\frac{L_{\max}}{L_{\text{act}}}, & L_{\text{act}} > L_{\max}.
+\frac{L_{\max}}{L_{\text{act}}}, & L_{\text{act}} > L_{\max}
 \end{cases}
 \end{equation}
-This is exactly the branching logic in the implementation.
+This scoring mechanism rewards paths that maintain coherent local narrative flow while penalizing those with excessive jumps or inversions.
 
 \paragraph{Bidirectional fusion}
 Calling the procedure twice—once with the reference as source (precision) and once with roles swapped (recall)—yields $NAS_{L,P}$ and $NAS_{L,R}$. They are combined symmetrically by the harmonic mean:
@@ -229,54 +195,31 @@ mirroring the fusion used for distance-based NAS.
 With this formulation, paths that remain within the ideal band score 1.0; drastic inversions collapse $\ell_i$ to zero, pushing $L_{\text{act}}$ below $L_{\min}$ and the score toward 0, while minor narrative reorderings are absorbed by $\tau_{LNT}$ to avoid undue penalties.
 
 \subsubsection{Window-Regulariser and Final NAS}
-Let $N_{ref}$ and $N_{gen}$ be the reference- and generated-lengths, $\text{MW}_{P}$ and $\text{MW}_{R}$ the Mapping-Window lists produced earlier, each window $w_j = [s_j, e_j)$ having height $h_j = e_j - s_j$.
+While allowing for descriptive variability through Mapping Windows is essential for robust evaluation, unfairly large windows can undermine the meaningfulness of NAS assessments. To prevent unfair length comparisons, VCS employs a window regularizer that penalizes excessive window coverage. The regularizer $R_w$ quantifies how meaningful the NAS score remains by measuring the proportion of the similarity matrix covered by Mapping Windows.
 
-\paragraph{Choose the orientation to regularise}
-Use the window set that spans the longer vertical timeline:
-\begin{equation}
-\mathcal{W} = \begin{cases} 
-\text{MW}_{R}, & N_{ref} < N_{gen}, \\
-\text{MW}_{P}, & N_{ref} \geq N_{gen}.
-\end{cases}
-\end{equation}
+The regularizer operates on the window set $\mathcal{W}$ that spans the longer timeline: $\mathcal{W} = \text{MW}_{R}$ when $N_{ref} < N_{gen}$, otherwise $\mathcal{W} = \text{MW}_{P}$.
 
-\paragraph{Compute the window-coverage ratio}
-Total Mapping-Window area (each window is one unit wide on the horizontal axis):
-\begin{equation}
-A_{MW} = \sum_{w_j \in \mathcal{W}} h_j
-\end{equation}
-Overall comparison grid area:
-\begin{equation}
-A_{timeline} = N_{ref} \cdot N_{gen}
-\end{equation}
-The \textit{theoretical minimum} coverage when every window is height 1 is:
-\begin{equation}
-a_{min} = \frac{1}{\max(N_{ref}, N_{gen})}
-\end{equation}
+\paragraph{Window coverage analysis}
+The window coverage ratio compares the total Mapping-Window area against the full comparison grid. With each window having unit width, the total window area is $A_{MW} = \sum_{w_j \in \mathcal{W}} h_j$, while the complete timeline comparison area is $A_{timeline} = N_{ref} \cdot N_{gen}$. The theoretical minimum coverage occurs when every window has height 1, yielding $a_{min} = 1/\max(N_{ref}, N_{gen})$.
 
-\paragraph{Window regulariser}
-Let $a = A_{MW}/A_{timeline}$ be the observed area ratio. The regulariser rescales $a$ into $[0,1]$ with a lower anchor at $a_{min}$ and an upper anchor at $0.5$:
+\paragraph{Regularization mechanism}
+The regularizer transforms the observed area ratio $a = A_{MW}/A_{timeline}$ into a penalty factor. When Mapping Windows cover 50\% or more of the comparison area ($a \geq 0.5$), NAS becomes meaningless as the constraints provide insufficient discrimination. The 0.5 hyperparameter reflects this critical threshold: at 50\% coverage, the windows are so permissive that chronological assessment loses significance. The regularizer scales linearly from $a_{min}$ (minimum meaningful coverage) to 0.5 (maximum acceptable coverage):
 \begin{equation}
 R_w = \text{clip}\left(\frac{a - a_{min}}{0.5 - a_{min}}, 0, 1\right)
 \end{equation}
-If the grid degenerates (zero area) the regulariser defaults to 0.
+where $R_w$ indicates how much the NAS score should be discounted due to excessive window permissiveness.
 
-\paragraph{Combine $NAS_D$ and $NAS_L$}
-From previous sections we already have $\text{NAS}_D \in [0,1]$ and $\text{NAS}_L \in [0,1]$. Fuse them with the harmonic mean:
-\begin{equation}
-NAS_{F1} = \frac{2 \cdot NAS_D \cdot NAS_L}{NAS_D + NAS_L} \quad \text{(set to 0 if } NAS_D + NAS_L = 0\text{)}
-\end{equation}
+\paragraph{Final NAS integration}
+NAS combines $NAS_D$ and $NAS_L$ to integrate both global positional fidelity and local narrative coherence perspectives through the harmonic mean $NAS_{F1} = \frac{2 \cdot NAS_D \cdot NAS_L}{NAS_D + NAS_L}$ (set to 0 if $NAS_D + NAS_L = 0$). This fusion allows VCS to capture both macro-level chronological alignment and micro-level narrative flow patterns.
 
-\paragraph{Regularised NAS}
-Finally, penalise overly wide windows:
+The final NAS is then regularized by window coverage to penalize unfair advantages from excessive window expansion that occurs when comparing shorter and longer descriptions:
 \begin{equation}
 \boxed{NAS_{final} = \begin{cases}
 \frac{NAS_{F1} - R_w}{1 - R_w}, & NAS_{F1} > R_w, \\
-0, & \text{otherwise}.
+0, & \text{otherwise}
 \end{cases}}
 \end{equation}
-
-When Mapping Windows are narrow ($R_w \approx 0$), the score collapses to $NAS_{F1}$. As windows approach half the timeline ($R_w \to 1$), even a perfect $NAS_{F1} = 1$ is damped to zero, reflecting that lax windowing masks narrative disorder.
+When Mapping Windows maintain reasonable constraints ($R_w \approx 0$), the score approximates $NAS_{F1}$. As window coverage approaches the critical 50\% threshold ($R_w \to 1$), even perfect alignment scores are progressively dampened toward zero, ensuring that overly permissive windowing cannot mask genuine narrative disorder.
 
 This completes the mathematical definition of NAS, now comprising:
 \begin{enumerate}
