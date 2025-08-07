@@ -39,14 +39,14 @@ Recent evaluation approaches increasingly leverage Large Language Models (LLMs),
 \subsection{METHODOLOGY}
 \label{sec:methodology_vcs}
 
+Figure~\ref{fig:vcs-architecture} shows the VCS pipeline, which computes semantic and narrative alignment between reference and generated descriptions to achieve comprehensive long-form video description evaluation.
+
 \begin{figure*}[t]
 \centering
 \includegraphics[width=0.8\textwidth]{images/VCS.pdf}
 \caption{VCS Pipeline. The VCS assesses video descriptions by comparing a reference text ($T_{ref}$) with a model-generated text ($T_{gen}$). Both texts are initially segmented by SaT and embedded via NV-Embed-v2. The Global Alignment Score (GAS) is computed from the full text embeddings. For localized analysis, texts are chunked and embedded, forming a similarity matrix. From this, precision and recall-oriented best matches yield the Local Alignment Score (LAS)—the harmonic mean of $LAS_P$ (precision) and $LAS_R$ (recall). The Narrative Alignment Score (NAS) incorporates distance-based ($NAS_D$) and line-based ($NAS_L$) assessments. $NAS_D$ and $NAS_L$ are harmonic means of their respective precision and recall components. A Window Regularizer ($R_W$) refines the NAS. The Semantic Alignment Score (SAS) is derived by modulating GAS with LAS. The final VCS results from modulating the smaller of SAS and the regularized NAS with the larger.}
 \label{fig:vcs-architecture}
 \end{figure*}
-
-Figure~\ref{fig:vcs-architecture} shows the VCS pipeline, which computes semantic and narrative alignment between reference and generated descriptions to achieve comprehensive long-form video description evaluation.
 
 \subsubsection{Global Alignment Score (GAS)}
 VCS computes GAS to capture global thematic alignment between reference and generated descriptions. Given input texts $T_{ref}$ and $T_{gen}$, we encode each description using NV-Embed-v2. The GAS is computed as:
@@ -73,6 +73,8 @@ which represents the cosine similarity between the $i$-th reference chunk and $j
 However, before selecting the best match for each chunk, VCS defines Mapping Windows (MW) that constrain the search space within this similarity matrix. This concept stems from empirical observations: when computing pairwise chunk embeddings between identical long-form descriptions, the resulting similarity matrix exhibits a clear diagonal structure where $C_1^{ref}$ maps to $C_1^{gen}$, $C_2^{ref}$ maps to $C_2^{gen}$, and so on, with this diagonal pattern stretching or compressing proportionally in brevity or verbosity cases. Hence, for given chunk counts $N_{ref}$ and $N_{gen}$, we define this diagonal search space and call it Mapping Windows—regions where each chunk should ideally map.
 
 VCS identifies the longer sequence as $\max(N_{ref}, N_{gen})$ and the shorter sequence as $\min(N_{ref}, N_{gen})$. We compute slope $s = \text{longer}/\text{shorter}$ and base window height $h_{mw} = \lceil s \rceil$. The algorithm creates direct windows by mapping each position $i$ in the shorter sequence to a window of height $h_{mw}$ in the longer sequence, spanning range $[\lfloor i \cdot s \rfloor, \min(\lfloor i \cdot s \rfloor + h_{mw}, \text{longer}))$ with proportional scaling. Reverse windows invert this mapping: for each position in the longer sequence, we determine which positions in the shorter sequence include it. VCS assigns Precision Windows ($MW_p$) and Recall Windows ($MW_r$) based on sequence direction: when $N_{ref} \geq N_{gen}$, precision uses direct windows and recall uses reverse windows; otherwise, assignments are reversed.
+
+We define $MW_p = \{[s_i, e_i)\}$ as the set of precision Mapping Windows and $MW_r = \{[s_j, e_j)\}$ as the set of recall Mapping Windows, where each window $[s_k, e_k)$ represents the start and end indices of the $k$-th mapping window.
 
 \subsubsection{Best Matching Algorithm}
 Having established Mapping Windows within the similarity matrix $\mathbf{S}$, VCS pairs each generated chunk with its best reference counterpart, and vice versa. Naively selecting the highest-similarity reference for each generated chunk leads to semantic collision and semantic ambiguity. Semantic collision occurs when a single chunk exhibits identical similarity to multiple counterparts, while semantic ambiguity arises when a chunk achieves nearly equal similarity with multiple candidates. Both issues stem from repeated events or superficial lexical overlap, obscuring true narrative counterparts.
@@ -105,19 +107,21 @@ However, LAS remains insensitive to chronological ordering and exhibits limited 
 Before assessing narrative alignment, VCS defines a user-controlled parameter called LNT. This concept stems from the observation that video narratives often permit multiple valid orderings and descriptive variations where temporally adjacent or concurrent events can be described in different sequences and detail levels without compromising narrative coherence. Complex video scenes frequently contain multiple actors and objects performing concurrent actions, where these details can be expressed in multiple valid orders and varying descriptive granularity—from highly detailed to moderate to sparse descriptions. To accommodate this inherent flexibility, VCS employs LNT as a tolerance parameter that defines acceptable deviation from strict chronological order and descriptive consistency, allowing higher LNT values to provide tolerance for both narrative reordering and descriptive variability when dense descriptions describe scenes with slightly different detail levels.
 
 \subsubsection{Distance-based NAS ($NAS_D$)}
-Given the one-to-one correspondences $M_P$ (generated$\rightarrow$reference) and $M_R$ (reference$\rightarrow$generated) returned by the Best-Matching Algorithm, $NAS_D$ penalises every match whose index falls outside its Mapping Window. Let $y$ denote the length of the timeline being evaluated (reference when computing precision, generated when computing recall) and $\ell$ be the total number of Mapping Windows in that orientation.
+Mapping Windows define where chunks should ideally match if the narrative structure is preserved between reference and generated descriptions, establishing the global position of matched chunks. $NAS_D$ formalizes this intuition by penalizing each chunk based on its distance from the ideal region defined by the Mapping Windows, making it particularly sensitive to global chronological alignment violations. For precision evaluation, $NAS_D$ uses correspondence set $M_P$ and precision Mapping Windows $MW_p$; for recall evaluation, it uses correspondence set $M_R$ and recall Mapping Windows $MW_r$.
 
-\paragraph{Local Chronology Tolerance (LCT)}
-The auxiliary window height that defines the tolerance zone is:
+However, before computing penalties, VCS applies Local Narrative Tolerance (LNT) to account for natural narrative variations. LNT expands each Mapping Window with penalty-free zones, recognizing that chunks matching within these expanded regions represent acceptable chronological alignments.
+
+\paragraph{Local Narrative Tolerance (LNT)}
+We first compute the LNT window height:
 \begin{equation}
-h_{LCT} = \left\lceil \frac{y}{x} \right\rceil - \mathbf{1}[y > x \land 0 < \frac{y}{x} - \left\lfloor \frac{y}{x} \right\rfloor \leq 0.5]
+h_{LNT} = \left\lceil \frac{y}{x} \right\rceil - \mathbf{1}[y > x \land 0 < \frac{y}{x} - \left\lfloor \frac{y}{x} \right\rfloor \leq 0.5]
 \end{equation}
-where $x$ is the length of the opposite timeline. Thus $h_{LCT}$ is the Mapping-Window height (ceiling of the length ratio) but drops by one row when the longer/shorter ratio's fractional part lies in $(0, 0.5]$.
+where $x$ is the length of the opposite timeline, $y$ denotes the length of the timeline being evaluated (reference when computing precision, generated when computing recall), and $\ell$ is the total number of Mapping Windows in that orientation. Thus $h_{LNT}$ is the Mapping-Window height (ceiling of the length ratio) but drops by one row when the longer/shorter ratio's fractional part lies in $(0, 0.5]$.
 
-A user-controlled multiplier $\tau_{LCT} \geq 0$ expands each Mapping Window by $\tau_{LCT} \cdot h_{LCT}$ rows on both sides. Any match whose vertical distance from the window boundary is $\leq \tau_{LCT} \cdot h_{LCT}$ is treated as chronologically acceptable and incurs no penalty.
+A user-controlled multiplier $\tau_{LNT} \geq 0$ expands each Mapping Window by $\tau_{LNT} \cdot h_{LNT}$ rows on both sides. Any match whose vertical distance from the window boundary is $\leq \tau_{LNT} \cdot h_{LNT}$ is treated as chronologically acceptable and incurs no penalty.
 
 \paragraph{Per-chunk distance penalty}
-For a match located at index $k$ with original Mapping Window $[s, e)$, the distance penalty is $d(k) = s - k$ if $k < s$ and $d(k) = k - (e - 1)$ if $k \geq e$. After applying LCT, the effective penalty for that chunk is $p(k) = \frac{\max(0, d(k) - \tau_{LCT} \cdot h_{LCT})}{y}$,
+For a match located at index $k$ with original Mapping Window $[s, e)$, the distance penalty is $d(k) = s - k$ if $k < s$ and $d(k) = k - (e - 1)$ if $k \geq e$. After applying LNT, the effective penalty for that chunk is $p(k) = \frac{\max(0, d(k) - \tau_{LNT} \cdot h_{LNT})}{y}$,
 and $p(k) = 0$ if the chunk was already inside its window.
 
 \paragraph{Sequence-level normalisation}
@@ -131,17 +135,18 @@ P_{\max} = \frac{1}{y} \sum_{j=1}^{\ell} \max(s_j, y - e_j)
 \end{equation}
 The orientation-specific score is then:
 \begin{align}
-NAS_{D,prec} &= 1 - \frac{P_{total,prec}}{P_{\max,prec}} \\
-NAS_{D,rec} &= 1 - \frac{P_{total,rec}}{P_{\max,rec}}
+NAS_{D,P} &= 1 - \frac{P_{total,P}}{P_{\max,P}} \\
+NAS_{D,R} &= 1 - \frac{P_{total,R}}{P_{\max,R}}
 \end{align}
 
 \paragraph{Bidirectional fusion}
 Finally, $NAS_D$ combines both views through the harmonic mean:
 \begin{equation}
-NAS_D = \frac{2 \cdot NAS_{D,prec} \cdot NAS_{D,rec}}{NAS_{D,prec} + NAS_{D,rec}}
+NAS_D = \frac{2 \cdot NAS_{D,P} \cdot NAS_{D,R}}{NAS_{D,P} + NAS_{D,R}}
 \end{equation}
 
 \subsubsection{Line-based NAS ($NAS_L$)}
+While Mapping Windows constrain the search space and define the global position of each chunk in the narrative, their height essentially indicates how far apart neighboring chunks should be from each other to capture local narrative flow. $NAS_L$ formalizes this intuition by measuring how far apart two neighboring chunks are in the alignment path, and if they maintain expected distances, they contribute to the narrative line length, which is later compared with the ideal line to assess local narrative coherence.
 
 \paragraph{Ideal narrative-line band}
 Let the Mapping Windows be $W_i = [a_i, b_i)$ for $i = 1, \ldots, n$ with $x_i = i$. The shortest and longest feasible path lengths:
@@ -151,14 +156,14 @@ L_{\max} &= \max_{y_i \in W_i} \sum_{i=1}^{n-1} \sqrt{(x_{i+1} - x_i)^2 + (y_{i+
 \end{align}
 are obtained by dynamic-programming over consecutive windows: every candidate $y_{i+1}$ is relaxed from every candidate $y_i$ with edge-weight $\sqrt{1^2 + (y_{i+1} - y_i)^2}$. Tracing predecessors yields a floor path of length $L_{\min}$ and a ceil path of length $L_{\max}$.
 
-The successive vertical differences $\Delta y_i^{\text{floor}}$ along the floor path are cached in a map $\text{DY}_{\text{floor}}[x_i] = \Delta y_i^{\text{floor}}$; they later cap oversized jumps when Local Chronology Tolerance (LCT) is enabled.
+The successive vertical differences $\Delta y_i^{\text{floor}}$ along the floor path are cached in a map $\text{DY}_{\text{floor}}[x_i] = \Delta y_i^{\text{floor}}$; they later cap oversized jumps when Local Narrative Tolerance (LNT) is enabled.
 
-\paragraph{Local Chronology Tolerance (LCT)}
+\paragraph{Local Narrative Tolerance (LNT)}
 Let $L_s$ be the length of the source timeline (x-axis) and $L_t$ the length of the target timeline (y-axis). Define the base Mapping-Window height:
 \begin{equation}
 h_{mw} = \left\lceil \frac{L_t}{L_s} \right\rceil
 \end{equation}
-From this, the LCT window $\omega_0$ and its expanded version $\omega_{LCT}$ are set exactly as in the code:
+From this, the LNT window $\omega_0$ and its expanded version $\omega_{LNT}$ are set exactly as in the code:
 \begin{equation}
 \omega_0 = \begin{cases}
 h_{mw}, & L_t \leq L_s, \\
@@ -167,13 +172,13 @@ h_{mw}, & L_t \leq L_s, \\
 \end{cases}
 \end{equation}
 \begin{equation}
-\omega_{LCT} = \omega_0 + \begin{cases}
-h_{mw} \tau_{LCT}, & L_t \leq L_s, \\
-(h_{mw} - 1) \tau_{LCT}, & 0 < \rho \leq 0.5, \\
-h_{mw} \tau_{LCT}, & \rho > 0.5,
+\omega_{LNT} = \omega_0 + \begin{cases}
+h_{mw} \tau_{LNT}, & L_t \leq L_s, \\
+(h_{mw} - 1) \tau_{LNT}, & 0 < \rho \leq 0.5, \\
+h_{mw} \tau_{LNT}, & \rho > 0.5,
 \end{cases}
 \end{equation}
-where $\rho = L_t/L_s - \lfloor L_t/L_s \rfloor$ and $\tau_{LCT} \in \mathbb{N}_{\geq 0}$ is user-set.
+where $\rho = L_t/L_s - \lfloor L_t/L_s \rfloor$ and $\tau_{LNT} \in \mathbb{N}_{\geq 0}$ is user-set.
 
 \paragraph{Actual narrative-line length}
 The aligned points are sorted by the source index. For consecutive pairs $(x_i, y_i)$, $(x_{i+1}, y_{i+1})$ define:
@@ -181,8 +186,8 @@ The aligned points are sorted by the source index. For consecutive pairs $(x_i, 
 \Delta x_i &= x_{i+1} - x_i \\
 \Delta y_i &= y_{i+1} - y_i \\
 |\Delta y_i|^* &= \begin{cases}
-|\Delta y_i|, & \tau_{LCT} > 0, \\
-\Delta y_i, & \tau_{LCT} = 0.
+|\Delta y_i|, & \tau_{LNT} > 0, \\
+\Delta y_i, & \tau_{LNT} = 0.
 \end{cases}
 \end{align}
 Each segment is scored as follows:
@@ -191,7 +196,7 @@ Each segment is scored as follows:
 \begin{equation}
 \ell_i = \sqrt{\Delta x_i^2 + \Delta y_i^2}
 \end{equation}
-\item \textbf{LCT-capped segment} if $\omega_0 < |\Delta y_i|^* \leq \omega_{LCT}$ (requires $\tau_{LCT} > 0$):
+\item \textbf{LNT-capped segment} if $\omega_0 < |\Delta y_i|^* \leq \omega_{LNT}$ (requires $\tau_{LNT} > 0$):
 \begin{equation}
 \ell_i = \sqrt{\Delta x_i^2 + (|\Delta y_{x_i}^{\text{floor}}|)^2}
 \end{equation}
@@ -215,23 +220,23 @@ NAS_L = \begin{cases}
 This is exactly the branching logic in the implementation.
 
 \paragraph{Bidirectional fusion}
-Calling the procedure twice—once with the reference as source (precision) and once with roles swapped (recall)—yields $NAS_{L,prec}$ and $NAS_{L,rec}$. They are combined symmetrically by the harmonic mean:
+Calling the procedure twice—once with the reference as source (precision) and once with roles swapped (recall)—yields $NAS_{L,P}$ and $NAS_{L,R}$. They are combined symmetrically by the harmonic mean:
 \begin{equation}
-NAS_L = \frac{2 \cdot NAS_{L,prec} \cdot NAS_{L,rec}}{NAS_{L,prec} + NAS_{L,rec}}
+NAS_L = \frac{2 \cdot NAS_{L,P} \cdot NAS_{L,R}}{NAS_{L,P} + NAS_{L,R}}
 \end{equation}
 mirroring the fusion used for distance-based NAS.
 
-With this formulation, paths that remain within the ideal band score 1.0; drastic inversions collapse $\ell_i$ to zero, pushing $L_{\text{act}}$ below $L_{\min}$ and the score toward 0, while minor narrative reorderings are absorbed by $\tau_{LCT}$ to avoid undue penalties.
+With this formulation, paths that remain within the ideal band score 1.0; drastic inversions collapse $\ell_i$ to zero, pushing $L_{\text{act}}$ below $L_{\min}$ and the score toward 0, while minor narrative reorderings are absorbed by $\tau_{LNT}$ to avoid undue penalties.
 
 \subsubsection{Window-Regulariser and Final NAS}
-Let $N_{ref}$ and $N_{gen}$ be the reference- and generated-lengths, $\text{MW}_{prec}$ and $\text{MW}_{rec}$ the Mapping-Window lists produced earlier, each window $w_j = [s_j, e_j)$ having height $h_j = e_j - s_j$.
+Let $N_{ref}$ and $N_{gen}$ be the reference- and generated-lengths, $\text{MW}_{P}$ and $\text{MW}_{R}$ the Mapping-Window lists produced earlier, each window $w_j = [s_j, e_j)$ having height $h_j = e_j - s_j$.
 
 \paragraph{Choose the orientation to regularise}
 Use the window set that spans the longer vertical timeline:
 \begin{equation}
 \mathcal{W} = \begin{cases} 
-\text{MW}_{rec}, & N_{ref} < N_{gen}, \\
-\text{MW}_{prec}, & N_{ref} \geq N_{gen}.
+\text{MW}_{R}, & N_{ref} < N_{gen}, \\
+\text{MW}_{P}, & N_{ref} \geq N_{gen}.
 \end{cases}
 \end{equation}
 
