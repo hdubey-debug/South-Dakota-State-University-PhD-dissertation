@@ -188,65 +188,46 @@ With this formulation, paths that remain within the ideal band score 1.0; drasti
 Both $NAS_D$ and $NAS_L$ capture content completeness through their respective mechanisms. Missing chunks cause remaining chunks to shift outside expected mapping windows, incurring distance penalties in $NAS_D$, and create shorter narrative lines in $NAS_L$ as alignments skip intermediate positions. Extra content forces suboptimal chunk mappings in $NAS_D$ and extends narrative lines beyond expected lengths in $NAS_L$, moving $L_{\text{act}}$ outside the ideal band $[L_{\min}, L_{\max}]$. LNT accommodates legitimate descriptive variability while maintaining sensitivity to genuine content gaps.
 
 \subsubsection{Window-Regulariser and Final NAS}
-While Mapping Windows provide essential flexibility for robust evaluation, excessively permissive windows can completely undermine chronological assessment validity. This problem becomes acute when comparing descriptions of vastly different lengths, where mapping windows may become so large that they lose discriminative power.
+Excessively permissive mapping windows can undermine chronological assessment validity, particularly when comparing descriptions of vastly different lengths. At 50% similarity matrix coverage, NAS becomes meaningless as constraints provide insufficient discrimination between good and poor chronological alignment. VCS employs a window regularizer $R_w$ that quantifies assessment meaningfulness by measuring the proportion of the similarity matrix covered by Mapping Windows. The regularizer operates on the window set $\mathcal{W}$ that spans the longer timeline: $\mathcal{W} = \text{MW}_{R}$ when $N_{ref} < N_{gen}$, otherwise $\mathcal{W} = \text{MW}_{P}$.
 
-Consider an extreme case: when comparing a 2-chunk reference with a 10-chunk generated description, the resulting mapping windows would cover nearly the entire similarity matrix, making any chronological arrangement appear acceptable. At this point, NAS assessment becomes meaningless as the constraints provide insufficient discrimination between good and poor chronological alignment.
-
-The critical threshold occurs at 50% similarity matrix coverage. When only 2 chunks exist on either axis, mapping windows covering 50% or more of the comparison area indicate that chronological constraints have become too permissive to provide meaningful evaluation. Beyond this threshold, the windows are so expansive that even severely disordered narratives would appear chronologically acceptable.
-
-To address this fundamental validity concern, VCS employs a window regularizer $R_w$ that quantifies assessment meaningfulness by measuring the proportion of the similarity matrix covered by Mapping Windows. The regularizer implements a fairness control mechanism that prevents unfair length comparisons from masking genuine chronological evaluation.
-
-The regularizer operates on the window set $\mathcal{W}$ that spans the longer timeline: $\mathcal{W} = \text{MW}_{R}$ when $N_{ref} < N_{gen}$, otherwise $\mathcal{W} = \text{MW}_{P}$.
-
-\paragraph{Window coverage analysis}
-The window coverage ratio compares the total Mapping-Window area against the full comparison grid. With each window having unit width, the total window area is $A_{MW} = \sum_{w_j \in \mathcal{W}} h_j$, while the complete timeline comparison area is $A_{timeline} = N_{ref} \cdot N_{gen}$. The theoretical minimum coverage occurs when every window has height 1, yielding $a_{min} = 1/\max(N_{ref}, N_{gen})$.
-
-\paragraph{Regularization mechanism}
-The regularizer transforms the observed area ratio $a = A_{MW}/A_{timeline}$ into a penalty factor. When Mapping Windows cover 50\% or more of the comparison area ($a \geq 0.5$), NAS becomes meaningless as the constraints provide insufficient discrimination. The 0.5 hyperparameter reflects this critical threshold: at 50\% coverage, the windows are so permissive that chronological assessment loses significance. The regularizer scales linearly from $a_{min}$ (minimum meaningful coverage) to 0.5 (maximum acceptable coverage):
+The window coverage ratio compares total Mapping-Window area $A_{MW} = \sum_{w_j \in \mathcal{W}} h_j$ against complete timeline comparison area $A_{timeline} = N_{ref} \cdot N_{gen}$. The theoretical minimum coverage is $a_{min} = 1/\max(N_{ref}, N_{gen})$. The regularizer transforms the observed area ratio $a = A_{MW}/A_{timeline}$ into a penalty factor, scaling linearly from $a_{min}$ to 0.5:
 \begin{equation}
 R_w = \text{clip}\left(\frac{a - a_{min}}{0.5 - a_{min}}, 0, 1\right)
 \end{equation}
-where $R_w$ indicates how much the NAS score should be discounted due to excessive window permissiveness.
 
-\paragraph{Final NAS integration}
-NAS combines $NAS_D$ and $NAS_L$ to integrate both global positional fidelity and local narrative coherence perspectives through the harmonic mean $NAS_{F1} = \frac{2 \cdot NAS_D \cdot NAS_L}{NAS_D + NAS_L}$ (set to 0 if $NAS_D + NAS_L = 0$). This fusion allows VCS to capture both macro-level chronological alignment and micro-level narrative flow patterns.
-
-The final NAS is then regularized by window coverage to penalize unfair advantages from excessive window expansion that occurs when comparing shorter and longer descriptions:
+NAS combines $NAS_D$ and $NAS_L$ through the harmonic mean $NAS_{F1} = \frac{2 \cdot NAS_D \cdot NAS_L}{NAS_D + NAS_L}$. The final NAS is then regularized by window coverage:
 \begin{equation}
 \boxed{NAS_{final} = \begin{cases}
 \frac{NAS_{F1} - R_w}{1 - R_w}, & NAS_{F1} > R_w, \\
 0, & \text{otherwise}
 \end{cases}}
 \end{equation}
-When Mapping Windows maintain reasonable constraints ($R_w \approx 0$), the score approximates $NAS_{F1}$. As window coverage approaches the critical 50\% threshold ($R_w \to 1$), even perfect alignment scores are progressively dampened toward zero, ensuring that overly permissive windowing cannot mask genuine narrative disorder.
+When $R_w \approx 0$, the score approximates $NAS_{F1}$. As $R_w \to 1$, alignment scores are dampened toward zero.
 
 
 \subsubsection{Final VCS Aggregation}
-Having computed all component scores—Global Alignment Score (GAS) from full-text embeddings, Local Alignment Score (LAS) from optimized chunk correspondences, and Narrative Alignment Score (NAS) from chronological analysis of the same correspondences—VCS now integrates these complementary assessments into a unified evaluation metric.
-
-VCS employs a two-stage semantic assessment process that ensures comprehensive video description evaluation through hierarchical score integration, where each component contributes its specialized perspective to the final assessment.
+VCS employs a two-stage semantic assessment process that integrates Global Alignment Score (GAS), Local Alignment Score (LAS), and Narrative Alignment Score (NAS) into a unified evaluation metric.
 
 \paragraph{Stage 1: Semantic Alignment Score (SAS)}
-The first stage combines GAS and LAS to create the Semantic Alignment Score, where LAS acts as a regularizer for GAS. The goal is to modulate and correct global semantic confidence by incorporating local alignment quality, creating true semantic alignment:
+The first stage combines GAS and LAS, where LAS regularizes GAS:
 \begin{equation} \label{eq:sas_revised} 
 SAS = \frac{GAS - (1 - LAS)}{LAS}
 \end{equation}
-when $LAS > 0$ and the numerator is positive, otherwise $SAS = 0$. This formulation ensures that strong global confidence (high GAS) is preserved when supported by solid local alignment (high LAS), while weak local alignment heavily regularizes even confident global assessments.
+when $LAS > 0$ and the numerator is positive, otherwise $SAS = 0$.
 
 \paragraph{Stage 2: Final VCS Integration}
-The second stage integrates SAS with NAS to produce the final VCS, where the weaker component regularizes the stronger one. This ensures both semantic understanding and narrative coherence must be present for high scores:
+The second stage integrates SAS with NAS, where the weaker component regularizes the stronger one:
 \begin{align}
 S_{min} &= \min(SAS, NAS_{final}) \label{eq:s_min} \\
 S_{max} &= \max(SAS, NAS_{final}) \label{eq:s_max} \\
 VCS &= \frac{S_{min} - (1 - S_{max})}{S_{max}} \label{eq:vcs_final}
 \end{align}
-when both components are positive and the numerator exceeds zero, otherwise $VCS = 0$. This adaptive weighting captures the fundamental insight that both semantic accuracy and narrative order must be strong for coherent video storytelling.
+when both components are positive and the numerator exceeds zero, otherwise $VCS = 0$.
 
-\paragraph{Story Coherence Logic}
-The VCS framework addresses four critical evaluation scenarios through its hierarchical design. When GAS is high but LAS is low (same story, different expression), local chunking noise affects alignment, causing LAS to heavily regularize the global confidence—correctly identifying that superficial similarity masks alignment issues. When both GAS and LAS are low (low global confidence with poor local alignment), this indicates mere superficial word overlap without genuine story similarity. When NAS is high but SAS is low (wrong content in right order), this reveals correct chronological structure but incorrect semantic content—no meaningful story comprehension exists. Finally, when SAS is high but NAS is low (right content in wrong order), this indicates semantic understanding without narrative coherence—again resulting in incoherent storytelling. The VCS framework's two-stage regularization ensures that only descriptions demonstrating both semantic fidelity and narrative coherence achieve high scores, reflecting true video comprehension.
+The VCS framework addresses four evaluation scenarios: (1) High GAS, low LAS indicates superficial similarity masking alignment issues; (2) Low GAS and LAS indicates superficial word overlap without story similarity; (3) High NAS, low SAS reveals correct chronology but incorrect semantic content; (4) High SAS, low NAS indicates semantic understanding without narrative coherence. The two-stage regularization ensures only descriptions with both semantic fidelity and narrative coherence achieve high scores.
 
 \subsubsection{Extension for Short-Form Descriptions (VCS$_{short}$)}
-For short-form description evaluation, VCS$_{short}$ adapts the complete VCS methodology to operate at word-level granularity. Input texts undergo cleaning to remove punctuation and stop words, then tokenization into individual words that serve as fundamental elements. These words replace multi-word chunks in all alignment and scoring processes while maintaining identical metric computation and aggregation logic, enabling consistent evaluation across different description lengths.
+VCS$_{short}$ adapts the complete VCS methodology to operate at word-level granularity. Input texts undergo cleaning and tokenization into individual words that replace multi-word chunks in all alignment and scoring processes while maintaining identical metric computation and aggregation logic.
 
 \subsection{DATASET CONSTRUCTION}
 
