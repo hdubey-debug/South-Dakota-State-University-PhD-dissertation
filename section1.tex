@@ -407,7 +407,7 @@ The superior consistency of VCS across authorial styles validates its methodolog
 
 Table~\ref{tab:vatex-eval} presents human judgment correlation scores on the VATEX-EVAL dataset, comparing VCS$_{short}$ against traditional metrics in both single-reference (1Ref) and multi-reference (9Refs) settings using Kendall's $\tau_b$ and Spearman's $\rho$ correlation coefficients.
 
-VCS$_{short}$ achieves state-of-the-art performance in the multi-reference setting, with Kendall's $\tau_b$ = 41.5\% and Spearman's $\rho$ = 52.8\% for LNT$_0$, substantially outperforming the previous best metric (RefPAC-S: $\tau_b$ = 38.1\%, $\rho$ = 48.8\%). In the single-reference setting, VCS$_{short}$ achieves competitive performance ($\tau_b$ = 30.0\%, $\rho$ = 38.1\%) while RefPAC-S leads ($\tau_b$ = 31.4\%, $\rho$ = 40.5\%).
+VCS$_{short}$ achieves state-of-the-art performance in the multi-reference setting, with Kendall's $\tau_b$ = 41.3\% and Spearman's $\rho$ = 52.6\% for LNT$_1$, substantially outperforming the previous best metric (RefPAC-S: $\tau_b$ = 38.1\%, $\rho$ = 48.8\%). In the single-reference setting, VCS$_{short}$ with LNT$_1$ achieves competitive performance ($\tau_b$ = 29.8\%, $\rho$ = 37.9\%) while RefPAC-S leads ($\tau_b$ = 31.4\%, $\rho$ = 40.5\%). VCS$_{short}$ with LNT$_0$ shows moderate performance across both settings ($\tau_b$ = 24.6\%/33.2\%, $\rho$ = 27.9\%/38.8\% for 1-ref/9-refs respectively).
 
 The superior multi-reference performance demonstrates VCS's methodological strength: the comprehensive evaluation framework combining semantic alignment, local content matching, and narrative consistency assessment aligns more closely with human judgment patterns when multiple reference descriptions are available. This validates VCS's effectiveness for both long-form and short-form video description evaluation across diverse evaluation scenarios.
 
@@ -434,15 +434,15 @@ The superior multi-reference performance demonstrates VCS's methodological stren
     PAC-S & 00.0 & 00.0 & 00.0 & 00.0 \\
     RefPAC-S & \textbf{31.4} & \textbf{40.5} & 38.1 & 48.8 \\
     \hline
-    VCS$_{C_1|LNT_0}$ & 30.0 & 38.1 & \textbf{41.5} & \textbf{52.8} \\
-    VCS$_{C_1|LNT_1}$ & 29.8 & 37.9 & 41.3 & 52.6 \\
+    VCS$_{C_1|LNT_0}$ & 24.6 & 27.9 & 33.2 & 38.8 \\
+    VCS$_{C_1|LNT_1}$ & 29.8 & 37.9 & \textbf{41.3} & \textbf{52.6} \\
     \hline
   \end{tabular}
-  \caption{Human judgment correlation scores on VATEX-EVAL dataset. VCS$_{short}$ attains state-of-the-art human correlation in the 9-ref setting (Kendall's $\tau = 41.5$, Spearman's $\rho = 52.8$) and competitive results in the 1-ref setting (Kendall's $\tau = 30.0$, Spearman's $\rho = 38.1$).}
+  \caption{Human judgment correlation scores on VATEX-EVAL dataset. VCS$_{short}$ with LNT$_1$ attains state-of-the-art human correlation in the 9-ref setting (Kendall's $\tau = 41.3$, Spearman's $\rho = 52.6$) while VCS$_{short}$ with LNT$_0$ achieves competitive results in both settings.}
   \label{tab:vatex-eval}
 \end{table}
 
-The comprehensive experimental evaluation demonstrates VCS's superior performance across all evaluation scenarios. VCS is the only metric that consistently distinguishes valid variations from invalid corruptions while maintaining robustness across authorial styles and achieving state-of-the-art human correlation in multi-reference settings. The LNT parameter's dual functionality (Local Chronology Tolerance and Local Descriptive Tolerance) provides configurable sensitivity to both chronological and descriptive variations, enabling fine-tuned evaluation control. These results establish VCS as a comprehensive solution for reliable evaluation of both long-form and short-form video descriptions across diverse evaluation requirements.
+The comprehensive experimental evaluation demonstrates VCS's superior performance across all evaluation scenarios. VCS is the only metric that consistently distinguishes valid variations from invalid corruptions while maintaining robustness across authorial styles and achieving state-of-the-art human correlation in multi-reference settings. The LNT parameter's dual functionality provides configurable sensitivity to both chronological and descriptive variations, enabling fine-tuned evaluation control. These results establish VCS as a comprehensive solution for reliable evaluation of both long-form and short-form video descriptions across diverse evaluation requirements.
 
 \subsection{CONCLUSION}
 
