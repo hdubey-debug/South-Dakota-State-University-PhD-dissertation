@@ -93,23 +93,51 @@ M_P &= \{(C_j^{gen}, C_{i^*}^{ref})\} \quad \text{(precision best matches)} \\
 M_R &= \{(C_i^{ref}, C_{j^*}^{gen})\} \quad \text{(recall best matches)}
 \end{align}
 
+**Pipeline Flow**: These correspondence sets $M_P$ and $M_R$ serve as the foundation for all subsequent VCS components. While the similarity matrix $\mathbf{S}$ contains comprehensive pairwise relationships, the Best Matching Algorithm distills this information into optimized correspondences that feed directly into both Local Alignment Score (LAS) computation and Narrative Alignment Score (NAS) assessment, ensuring consistent chunk pairing across all evaluation dimensions.
+
 \subsubsection{Local Alignment Score (LAS)}
-Having obtained the correspondence sets $M_P$ and $M_R$ from the Best-Matching Algorithm, VCS computes the LAS by averaging cosine similarities of matched chunk pairs. The precision component $LAS_P$ evaluates how well generated text aligns with reference text, while recall component $LAS_R$ evaluates the reverse. LAS is their harmonic mean:
+Receiving the optimized correspondence sets $M_P$ and $M_R$ from the Best-Matching Algorithm, VCS computes the Local Alignment Score by extracting the cosine similarities from the original similarity matrix $\mathbf{S}$ for each matched pair. This process transforms the comprehensive pairwise similarity information into focused alignment assessment based on optimal correspondences.
+
+The precision component $LAS_P$ evaluates how well generated text aligns with reference text by averaging similarities from $M_P$, while recall component $LAS_R$ evaluates the reverse using $M_R$. LAS combines both perspectives through their harmonic mean:
 
 \begin{equation}
 LAS = \frac{2 \cdot LAS_P \cdot LAS_R}{LAS_P + LAS_R}
 \end{equation}
 
+**Transition to Narrative Assessment**: While LAS captures semantic alignment quality through these optimized correspondences, it cannot assess whether the matched chunks maintain proper chronological relationships. This limitation necessitates the Narrative Alignment Score, which analyzes the same correspondence sets $M_P$ and $M_R$ from a temporal coherence perspective.
+
 \subsubsection{Narrative Alignment Score (NAS)}
-However, LAS remains insensitive to chronological ordering and exhibits limited sensitivity to missing or extra content. While LAS performs local semantic alignment and can detect content variations, its reliance on semantic similarity averaging means that even weak semantic matches contribute to the overall score, reducing its ability to strongly penalize missing or extraneous content. To mitigate both limitations, VCS introduces NAS that evaluates chronological consistency while enhancing sensitivity to content gaps and additions through narrative alignment assessment. NAS comprises four components: Distance-based NAS ($NAS_D$), Line-based NAS ($NAS_L$), a window regularizer, and the user-controlled Local Narrative Tolerance (LNT) parameter.
+While LAS successfully captures local semantic alignment, it faces two critical limitations that compromise comprehensive video description evaluation. First, LAS remains completely insensitive to chronological ordering—descriptions with identical semantic content but completely reversed temporal order receive identical scores. Second, LAS exhibits limited sensitivity to missing or extra content since semantic similarity averaging allows weak matches to inflate overall scores, masking content gaps or extraneous additions.
+
+These limitations stem from LAS's fundamental design: averaging cosine similarities of matched chunks prioritizes semantic overlap over narrative structure. Hence, a description that correctly captures all story elements but presents them in chronological chaos would score identically to a well-structured narrative. This poses a severe problem for video comprehension evaluation, where temporal coherence is essential for demonstrating true understanding.
+
+To address these fundamental gaps, VCS introduces the Narrative Alignment Score (NAS) that evaluates chronological consistency while enhancing sensitivity to content completeness through narrative alignment assessment. 
+
+However, chronological assessment itself presents a multi-faceted challenge requiring complementary approaches. Consider two types of chronological disruptions: (1) **Global chronological chaos** where the ending is swapped with the beginning, and (2) **Local chronological disorder** where neighboring chunks are swapped. A single assessment mechanism cannot effectively detect both patterns.
+
+**Distance-based assessment** excels at detecting global chronological disruptions by measuring how far each chunk deviates from its ideal position within mapping windows. When endings swap with beginnings, chunks move dramatically outside their expected windows, incurring substantial penalties. However, when neighboring chunks swap positions, their distances from mapping window boundaries remain relatively small, resulting in minimal penalties that fail to reflect the severity of local chronological disorder.
+
+**Line-based assessment** addresses this gap by focusing exclusively on local narrative flow between consecutive chunks. Rather than measuring global position conformity, it evaluates whether chunk $C_{i+1}$ appears at its expected neighboring position relative to chunk $C_i$, regardless of their global positions. Hence, global chronological chaos (where chunks maintain relative neighbor relationships despite positional chaos) incurs minimal line-based penalties, while neighboring chunk swaps create substantial violations in expected local flow patterns.
+
+This complementary relationship necessitates **both** assessments: distance-based NAS captures global chronological structure violations, while line-based NAS detects local narrative flow disruptions. Together, they provide comprehensive chronological evaluation that neither approach achieves independently.
+
+NAS comprises four integrated components: Distance-based NAS ($NAS_D$) for global chronological assessment, Line-based NAS ($NAS_L$) for local narrative flow, a window regularizer for fairness control, and the user-controlled Local Narrative Tolerance (LNT) parameter for configurable flexibility.
 
 \subsubsection{Defining Local Narrative Tolerance (LNT)}
-Before assessing narrative alignment, VCS applies the user-controlled Local Narrative Tolerance (LNT) parameter. As established above, LNT accommodates natural narrative variations by providing tolerance for both chronological reordering and descriptive variability.
+Before diving into narrative alignment assessment, we must address a fundamental challenge: video narratives inherently permit multiple valid orderings and descriptive variations without compromising comprehension quality. This flexibility stems from the complex nature of video scenes where concurrent events, overlapping actions, and multi-layered storytelling create legitimate alternatives in temporal presentation and detail granularity.
+
+Consider a video scene with multiple actors performing simultaneous actions—one description might detail Character A's actions first, then Character B's, while another equally valid description interleaves their actions or prioritizes different aspects. Similarly, some descriptions provide extensive detail while others focus on key events, both potentially representing accurate comprehension at different granularities.
+
+To accommodate this inherent narrative flexibility, VCS employs Local Narrative Tolerance (LNT) as a configurable tolerance parameter. LNT operates differently across NAS components: in Distance-based NAS, LNT expands mapping window boundaries to accommodate chronological flexibility, while in Line-based NAS, LNT adjusts expected neighbor distances and permits controlled chronological variations. The specific mechanisms will be detailed in each respective section below.
 
 \subsubsection{Distance-based NAS ($NAS_D$)}
-Mapping Windows define where chunks should ideally match if the narrative structure is preserved between reference and generated descriptions, establishing the global position of matched chunks. $NAS_D$ formalizes this intuition by penalizing each chunk based on its distance from the ideal region defined by the Mapping Windows, making it particularly sensitive to global chronological alignment violations. For precision evaluation, $NAS_D$ uses correspondence set $M_P$ and precision Mapping Windows $MW_p$; for recall evaluation, it uses correspondence set $M_R$ and recall Mapping Windows $MW_r$.
+Building on the Best Matching Algorithm's correspondence sets $M_P$ and $M_R$, Distance-based NAS formalizes global chronological assessment by measuring how far each matched chunk deviates from its ideal narrative position. The core insight stems from Mapping Windows, which define where chunks should ideally align if narrative structure is preserved between reference and generated descriptions.
 
-However, before computing penalties, VCS applies LNT to expand each Mapping Window with penalty-free zones, recognizing that chunks matching within these expanded regions represent acceptable chronological alignments.
+$NAS_D$ operationalizes this concept by penalizing each chunk proportionally to its distance from the ideal region defined by the Mapping Windows, making it particularly sensitive to global chronological alignment violations like beginning-ending swaps. For precision evaluation, $NAS_D$ processes correspondence set $M_P$ against precision Mapping Windows $MW_p$; for recall evaluation, it uses correspondence set $M_R$ against recall Mapping Windows $MW_r$.
+
+**Content Alignment Through Distance Penalties**: Beyond chronological assessment, $NAS_D$ inherently captures content completeness. When chunks are missing from generated descriptions, remaining chunks in the precision evaluation slightly shift outside their expected mapping windows to align with available content, incurring distance penalties that reflect content gaps. Conversely, extra content in generated descriptions causes reference chunks in recall evaluation to map to suboptimal positions, again incurring penalties that signal content additions.
+
+**LNT Implementation in Distance-Based Assessment**: As conceptually introduced above, LNT accommodates legitimate narrative flexibility by expanding each Mapping Window with penalty-free zones. In $NAS_D$, LNT increases tolerance by padding window boundaries: chunks matching within $\tau_{LNT} \cdot h_{LNT}$ distance from original window edges incur zero penalty, recognizing acceptable chronological variations. Crucially, when reference and generated lengths are perfectly divisible, LNT of 1 allows up to 2 neighboring chunks to swap positions without penalty, while LNT of 2 permits swaps with chunks up to 2 positions away (e.g., $C_1$ swapping with $C_3$). This mathematical relationship ensures that LNT provides both descriptive variability tolerance and controlled chronological flexibility.
 
 \paragraph{Local Narrative Tolerance (LNT)}
 We first compute the LNT window height:
@@ -157,7 +185,9 @@ L_{\max} &= \max_{y_i \in MW} \sum_{i=1}^{n-1} \sqrt{(x_{i+1} - x_i)^2 + (y_{i+1
 These bounds are obtained through dynamic programming over consecutive windows: each candidate position $y_{i+1}$ is evaluated from every candidate position $y_i$ with edge-weight $\sqrt{1^2 + (y_{i+1} - y_i)^2}$. Tracing predecessors yields the optimal floor path (shortest line) and ceil path (longest line). The vertical differences $\Delta y_i^{\text{floor}}$ along the floor path are cached as $\text{DY}_{\text{floor}}[x_i] = \Delta y_i^{\text{floor}}$ to later constrain oversized jumps when LNT is applied.
 
 \paragraph{Local Narrative Tolerance (LNT)}
-To accommodate natural narrative variations in local flow, VCS applies LNT to define acceptable vertical jump ranges between consecutive alignment points. The base tolerance window $\omega_0$ and its LNT-expanded version $\omega_{LNT}$ are computed using the previously defined mapping window height $h_{mw}$, where $L_s$ and $L_t$ represent source and target timeline lengths respectively:
+**Content Alignment Through Line Length Variations**: Similar to distance-based assessment, $NAS_L$ captures content completeness through narrative line characteristics. Missing chunks cause the actual narrative line to become shorter than the ideal range as consecutive alignments skip intermediate positions, while extra content creates longer-than-expected lines as additional alignment points extend the path length. Both scenarios move $L_{act}$ outside the ideal band $[L_{min}, L_{max}]$, triggering proportional penalties.
+
+**LNT Implementation in Line-Based Assessment**: In $NAS_L$, LNT operates differently than in distance-based assessment, focusing on acceptable jump magnitudes between consecutive alignment points rather than window boundary expansion. LNT defines tolerance ranges for vertical jumps between neighbors, accommodating natural narrative variations in local flow. The base tolerance window $\omega_0$ and its LNT-expanded version $\omega_{LNT}$ are computed using the previously defined mapping window height $h_{mw}$, where $L_s$ and $L_t$ represent source and target timeline lengths respectively:
 \begin{align}
 \omega_0 &= \begin{cases}
 h_{mw}, & L_t \leq L_s, \\
@@ -171,6 +201,8 @@ h_{mw} \tau_{LNT}, & \rho > 0.5
 \end{cases}
 \end{align}
 where $\rho = L_t/L_s - \lfloor L_t/L_s \rfloor$ represents the fractional part of the length ratio and $\tau_{LNT} \in \mathbb{N}_{\geq 0}$ is the user-controlled tolerance multiplier.
+
+This LNT mechanism enables controlled chronological flexibility: moderate jumps within the expanded tolerance $\omega_{LNT}$ contribute their full length to the narrative line, while jumps exceeding this threshold are clipped to prevent excessive penalties for acceptable reorderings. When reference and generated lengths are perfectly divisible, LNT of 1 allows neighboring chunks to swap positions without triggering clipping penalties, while LNT of 2 permits swaps with second-degree neighbors. Additionally, LNT accommodates descriptive variability by increasing expected distances between neighbors, allowing denser or sparser descriptions to maintain acceptable line lengths within the ideal band.
 
 \paragraph{Actual narrative-line length}
 The actual narrative line is constructed by connecting aligned chunk positions and measuring the total path length. For consecutive alignment pairs $(x_i, y_i)$ and $(x_{i+1}, y_{i+1})$ sorted by source index, each segment contributes to the line length based on its vertical jump magnitude. The segment length $\ell_i$ is computed as the standard Euclidean distance $\sqrt{(x_{i+1} - x_i)^2 + (y_{i+1} - y_i)^2}$ when the vertical jump $|y_{i+1} - y_i|$ falls within the base tolerance $\omega_0$. For moderate jumps exceeding $\omega_0$ but within the expanded tolerance $\omega_{LNT}$, the vertical component is clipped to the ideal floor slope $|\Delta y_{x_i}^{\text{floor}}|$ to prevent excessive penalties for acceptable narrative reordering. Extreme jumps beyond $\omega_{LNT}$ contribute zero length, effectively penalizing severe chronological violations. The total actual line length is $L_{\text{act}} = \sum_i \ell_i$.
@@ -196,7 +228,13 @@ mirroring the fusion used for distance-based NAS.
 With this formulation, paths that remain within the ideal band score 1.0; drastic inversions collapse $\ell_i$ to zero, pushing $L_{\text{act}}$ below $L_{\min}$ and the score toward 0, while minor narrative reorderings are absorbed by $\tau_{LNT}$ to avoid undue penalties.
 
 \subsubsection{Window-Regulariser and Final NAS}
-While allowing for descriptive variability through Mapping Windows is essential for robust evaluation, unfairly large windows can undermine the meaningfulness of NAS assessments. To prevent unfair length comparisons, VCS employs a window regularizer that penalizes excessive window coverage. The regularizer $R_w$ quantifies how meaningful the NAS score remains by measuring the proportion of the similarity matrix covered by Mapping Windows.
+While Mapping Windows provide essential flexibility for robust evaluation, excessively permissive windows can completely undermine chronological assessment validity. This problem becomes acute when comparing descriptions of vastly different lengths, where mapping windows may become so large that they lose discriminative power.
+
+Consider an extreme case: when comparing a 2-chunk reference with a 10-chunk generated description, the resulting mapping windows would cover nearly the entire similarity matrix, making any chronological arrangement appear acceptable. At this point, NAS assessment becomes meaningless as the constraints provide insufficient discrimination between good and poor chronological alignment.
+
+The critical threshold occurs at 50% similarity matrix coverage. When only 2 chunks exist on either axis, mapping windows covering 50% or more of the comparison area indicate that chronological constraints have become too permissive to provide meaningful evaluation. Beyond this threshold, the windows are so expansive that even severely disordered narratives would appear chronologically acceptable.
+
+To address this fundamental validity concern, VCS employs a window regularizer $R_w$ that quantifies assessment meaningfulness by measuring the proportion of the similarity matrix covered by Mapping Windows. The regularizer implements a fairness control mechanism that prevents unfair length comparisons from masking genuine chronological evaluation.
 
 The regularizer operates on the window set $\mathcal{W}$ that spans the longer timeline: $\mathcal{W} = \text{MW}_{R}$ when $N_{ref} < N_{gen}$, otherwise $\mathcal{W} = \text{MW}_{P}$.
 
@@ -224,7 +262,9 @@ When Mapping Windows maintain reasonable constraints ($R_w \approx 0$), the scor
 
 
 \subsubsection{Final VCS Aggregation}
-VCS employs a two-stage semantic assessment process that ensures comprehensive video description evaluation through hierarchical score integration.
+Having computed all component scores—Global Alignment Score (GAS) from full-text embeddings, Local Alignment Score (LAS) from optimized chunk correspondences, and Narrative Alignment Score (NAS) from chronological analysis of the same correspondences—VCS now integrates these complementary assessments into a unified evaluation metric.
+
+VCS employs a two-stage semantic assessment process that ensures comprehensive video description evaluation through hierarchical score integration, where each component contributes its specialized perspective to the final assessment.
 
 \paragraph{Stage 1: Semantic Alignment Score (SAS)}
 The first stage combines GAS and LAS to create the Semantic Alignment Score, where LAS acts as a regularizer for GAS. The goal is to modulate and correct global semantic confidence by incorporating local alignment quality, creating true semantic alignment:
