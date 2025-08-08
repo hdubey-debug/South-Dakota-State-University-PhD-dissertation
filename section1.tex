@@ -115,35 +115,15 @@ Video narratives permit multiple valid orderings and descriptive variations with
 \subsubsection{Distance-based NAS ($NAS_D$)}
 Mapping Windows define where chunks should ideally match if narrative structure is preserved between reference and generated descriptions. $NAS_D$ formalizes this intuition by penalizing each chunk based on its distance from the ideal region defined by the Mapping Windows. For precision evaluation, $NAS_D$ uses correspondence set $M_P$ and precision Mapping Windows $MW_p$; for recall evaluation, it uses correspondence set $M_R$ and recall Mapping Windows $MW_r$.
 
+\paragraph{Local Narrative Tolerance (LNT)}
 However, before computing penalties, VCS applies Local Narrative Tolerance (LNT) to account for natural narrative variations. LNT expands each Mapping Window with penalty-free zones, recognizing that chunks matching within these expanded regions represent acceptable chronological alignments. We first compute the LNT window height:
 \begin{equation}
 h_{LNT} = \left\lceil \frac{y}{x} \right\rceil - \mathbf{1}[y > x \land 0 < \frac{y}{x} - \left\lfloor \frac{y}{x} \right\rfloor \leq 0.5]
 \end{equation}
 where $y = N_{ref}$ and $x = N_{gen}$ for $NAS_{D,P}$, and the reverse for $NAS_{D,R}$. A user-defined multiplier $\tau_{LNT} \geq 0$ expands each Mapping Window by $\tau_{LNT} \cdot h_{LNT}$ rows. Chunks matching within this expanded window receive zero penalty.
 
-\paragraph{Local Narrative Tolerance (LNT)}
-We first compute the LNT window height:
-\begin{equation}
-h_{LNT} = \left\lceil \frac{y}{x} \right\rceil - \mathbf{1}[y > x \land 0 < \frac{y}{x} - \left\lfloor \frac{y}{x} \right\rfloor \leq 0.5]
-\end{equation}
-where $x$ is the length of the opposite timeline, $y$ denotes the length of the timeline being evaluated (reference when computing precision, generated when computing recall), and $\ell$ is the total number of Mapping Windows in that orientation. Thus $h_{LNT}$ is the Mapping-Window height (ceiling of the length ratio) but drops by one row when the longer/shorter ratio's fractional part lies in $(0, 0.5]$.
-
-A user-controlled multiplier $\tau_{LNT} \geq 0$ expands each Mapping Window by $\tau_{LNT} \cdot h_{LNT}$ rows on both sides. Any match whose vertical distance from the window boundary is $\leq \tau_{LNT} \cdot h_{LNT}$ is treated as chronologically acceptable and incurs no penalty.
-
-\paragraph{Per-chunk distance penalty}
-For a match located at index $k$ with original Mapping Window $[s, e)$, the distance penalty is $d(k) = s - k$ if $k < s$ and $d(k) = k - (e - 1)$ if $k \geq e$. After applying LNT, the effective penalty for that chunk is $p(k) = \frac{\max(0, d(k) - \tau_{LNT} \cdot h_{LNT})}{y}$,
-and $p(k) = 0$ if the chunk was already inside its window.
-
-\paragraph{Sequence-level normalisation}
-The actual total penalty is:
-\begin{equation}
-P_{total} = \sum_{j=1}^{\ell} p(k_j)
-\end{equation}
-while the maximum possible penalty for the same window layout is obtained by pushing every match to whichever timeline edge is further away:
-\begin{equation}
-P_{\max} = \frac{1}{y} \sum_{j=1}^{\ell} \max(s_j, y - e_j)
-\end{equation}
-The orientation-specific score is then:
+\paragraph{Distance penalty computation}
+For a match located at index $k$ with original Mapping Window $[s, e)$, the distance penalty is $d(k) = s - k$ if $k < s$ and $d(k) = k - (e - 1)$ if $k \geq e$. After applying LNT, the effective penalty for that chunk is $p(k) = \frac{\max(0, d(k) - \tau_{LNT} \cdot h_{LNT})}{y}$, and $p(k) = 0$ if the chunk was already inside its window. The actual total penalty is $P_{total} = \sum_{j=1}^{\ell} p(k_j)$ while the maximum possible penalty is $P_{\max} = \frac{1}{y} \sum_{j=1}^{\ell} \max(s_j, y - e_j)$. The orientation-specific score is:
 \begin{align}
 NAS_{D,P} &= 1 - \frac{P_{total,P}}{P_{\max,P}} \\
 NAS_{D,R} &= 1 - \frac{P_{total,R}}{P_{\max,R}}
@@ -159,16 +139,16 @@ NAS_D = \frac{2 \cdot NAS_{D,P} \cdot NAS_{D,R}}{NAS_{D,P} + NAS_{D,R}}
 While Mapping Windows define global chunk positions, their height indicates expected distances between neighboring chunks. $NAS_L$ measures distances between consecutive chunks in the alignment path, comparing the resulting narrative line length against ideal bounds to assess local narrative coherence.
 
 \paragraph{Ideal narrative-line band}
-Because Mapping Windows allow flexibility in chunk alignment, multiple valid narrative line paths are possible through these windows. VCS calculates the theoretical shortest and longest feasible line lengths to establish bounds for valid narrative flow. Using the previously defined mapping windows $MW_p$ and $MW_r$, the ideal line band is computed as:
+Mapping Windows allow flexibility in chunk alignment, creating multiple valid narrative line paths through these windows. VCS calculates theoretical shortest and longest feasible line lengths to establish bounds for valid narrative flow. Using mapping windows $MW_p$ and $MW_r$, the ideal line band is computed as:
 \begin{align}
 L_{\min} &= \min_{y_i \in MW} \sum_{i=1}^{n-1} \sqrt{(x_{i+1} - x_i)^2 + (y_{i+1} - y_i)^2} \\
 L_{\max} &= \max_{y_i \in MW} \sum_{i=1}^{n-1} \sqrt{(x_{i+1} - x_i)^2 + (y_{i+1} - y_i)^2}
 \end{align}
-These bounds are obtained through dynamic programming over consecutive windows: each candidate position $y_{i+1}$ is evaluated from every candidate position $y_i$ with edge-weight $\sqrt{1^2 + (y_{i+1} - y_i)^2}$. Tracing predecessors yields the optimal floor path (shortest line) and ceil path (longest line). The vertical differences $\Delta y_i^{\text{floor}}$ along the floor path are cached as $\text{DY}_{\text{floor}}[x_i] = \Delta y_i^{\text{floor}}$ to later constrain oversized jumps when LNT is applied.
+These bounds are obtained through dynamic programming over consecutive windows. The vertical differences $\Delta y_i^{\text{floor}}$ along the floor path are cached as $\text{DY}_{\text{floor}}[x_i] = \Delta y_i^{\text{floor}}$ to constrain oversized jumps when LNT is applied.
 
 \paragraph{Local Narrative Tolerance (LNT)}
 
-\textbf{LNT Implementation in Line-Based Assessment}: In $NAS_L$, LNT operates differently than in distance-based assessment, focusing on acceptable jump magnitudes between consecutive alignment points rather than window boundary expansion. LNT defines tolerance ranges for vertical jumps between neighbors, accommodating natural narrative variations in local flow. The base tolerance window $\omega_0$ and its LNT-expanded version $\omega_{LNT}$ are computed using the previously defined mapping window height $h_{mw}$, where $L_s$ and $L_t$ represent source and target timeline lengths respectively:
+In $NAS_L$, LNT operates differently than in distance-based assessment, focusing on acceptable jump magnitudes between consecutive alignment points rather than window boundary expansion. LNT defines tolerance ranges for vertical jumps between neighbors. The base tolerance window $\omega_0$ and its LNT-expanded version $\omega_{LNT}$ are computed using the previously defined mapping window height $h_{mw}$, where $L_s$ and $L_t$ represent source and target timeline lengths respectively:
 \begin{align}
 \omega_0 &= \begin{cases}
 h_{mw}, & L_t \leq L_s, \\
@@ -185,11 +165,8 @@ where $\rho = L_t/L_s - \lfloor L_t/L_s \rfloor$ represents the fractional part 
 
 Moderate jumps within the expanded tolerance $\omega_{LNT}$ contribute their full length to the narrative line, while jumps exceeding this threshold are clipped to the ideal floor slope. When reference and generated lengths are perfectly divisible, LNT of 1 allows neighboring chunks to swap without clipping penalties, while LNT of 2 permits swaps with second-degree neighbors.
 
-\paragraph{Actual narrative-line length}
-The actual narrative line is constructed by connecting aligned chunk positions and measuring the total path length. For consecutive alignment pairs $(x_i, y_i)$ and $(x_{i+1}, y_{i+1})$ sorted by source index, each segment contributes to the line length based on its vertical jump magnitude. The segment length $\ell_i$ is computed as the standard Euclidean distance $\sqrt{(x_{i+1} - x_i)^2 + (y_{i+1} - y_i)^2}$ when the vertical jump $|y_{i+1} - y_i|$ falls within the base tolerance $\omega_0$. For moderate jumps exceeding $\omega_0$ but within the expanded tolerance $\omega_{LNT}$, the vertical component is clipped to the ideal floor slope $|\Delta y_{x_i}^{\text{floor}}|$ to prevent excessive penalties for acceptable narrative reordering. Extreme jumps beyond $\omega_{LNT}$ contribute zero length, effectively penalizing severe chronological violations. The total actual line length is $L_{\text{act}} = \sum_i \ell_i$.
-
-\paragraph{Orientation-specific score}
-The line-based score evaluates whether the actual narrative line length falls within the ideal band. Paths maintaining expected narrative flow (where $L_{\min} \leq L_{\text{act}} \leq L_{\max}$) receive perfect scores of 1.0. Paths shorter than the minimum ideal length are penalized proportionally as $L_{\text{act}}/L_{\min}$, while paths exceeding the maximum ideal length are penalized inversely as $L_{\max}/L_{\text{act}}$:
+\paragraph{Line length computation}
+The actual narrative line is constructed by connecting aligned chunk positions and measuring the total path length. For consecutive alignment pairs $(x_i, y_i)$ and $(x_{i+1}, y_{i+1})$ sorted by source index, the segment length $\ell_i$ is computed as the standard Euclidean distance when the vertical jump $|y_{i+1} - y_i|$ falls within the base tolerance $\omega_0$. Moderate jumps exceeding $\omega_0$ but within the expanded tolerance $\omega_{LNT}$ are clipped to the ideal floor slope to prevent excessive penalties. Extreme jumps beyond $\omega_{LNT}$ contribute zero length. The total actual line length is $L_{\text{act}} = \sum_i \ell_i$. The line-based score evaluates whether the actual narrative line length falls within the ideal band:
 \begin{equation}
 NAS_L = \begin{cases}
 1, & L_{\min} \leq L_{\text{act}} \leq L_{\max}, \\
@@ -197,7 +174,6 @@ NAS_L = \begin{cases}
 \frac{L_{\max}}{L_{\text{act}}}, & L_{\text{act}} > L_{\max}
 \end{cases}
 \end{equation}
-This scoring mechanism rewards paths that maintain coherent local narrative flow while penalizing those with excessive jumps or inversions.
 
 \paragraph{Bidirectional fusion}
 Calling the procedure twice—once with the reference as source (precision) and once with roles swapped (recall)—yields $NAS_{L,P}$ and $NAS_{L,R}$. They are combined symmetrically by the harmonic mean:
